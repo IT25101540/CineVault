@@ -1,4 +1,3 @@
-# CineVault 🎬
 ### Premium Movie Review & Rental Platform
 **SE1020 Object-Oriented Programming | SOA Architecture | Modern Bento UI**
 
@@ -69,9 +68,9 @@ graph LR
 | :--- | :--- | :--- |
 | **IT25102885** | Dhimantha W.L.T. | **User Management**: Auth, Roles, and Profiles |
 | **IT25103586** | Navishika D.M.N.N. | **Movie Management**: Catalogue & Search Logic |
-| **IT25101540** | Gunathilaka H.D.T.T. | **Review & Rating**: Social system & Moderation |
+| **IT25101540** | Gunathilaka H.D.T.T. | **Admin Management**: Dashboard & KPI Stats |
 | **IT25103608** | Herath H.M.H.S. | **Rental Management**: Transactions & Logistics |
-| **IT25101901** | Thanuluxshan K. | **Admin Management**: Dashboard & KPI Stats |
+| **IT25101901** | Thanuluxshan K. | **Review & Rating**: Social system & Moderation |
 | **IT25100813** | Luckshidhan K. | **Director & Cast**: People profiles & Filmography |
 
 ---
@@ -122,7 +121,7 @@ CineVault serves as a practical demonstration of core Object-Oriented principles
 ## 📂 Project Structure
 
 ```text
-movie-review-and-rental-platform/
+soa-project/
 ├── backend/                # Spring Boot REST API
 │   ├── src/main/java/      # Java Source Code
 │   ├── src/main/resources/ # Configuration & Initial Seed Data
