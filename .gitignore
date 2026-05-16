@@ -1,0 +1,38 @@
+# Dependency directories
+node_modules/
+target/
+bin/
+out/
+build/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.iml
+
+# Logs
+logs/
+*.log
+
+# System files
+.mvn/wrapper/maven-wrapper.jar
+.gradle/
+.settings/
+.project
+.classpath
+
+# Compiled Output
+dist/
+.angular/
+.next/
+
+# Environment
+.env
+.env.*.local
+
+# Temp
+tmp/
+temp/
