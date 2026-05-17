@@ -1,0 +1,39 @@
+// IT25103608 – Herath H.M.H.S. – Component 04: Rental Management
+package com.movieplatform.dto;
+
+import java.time.LocalDate;
+
+public class RentalDTO {
+    private String id;
+    private String userId;
+    private String movieId;
+    private LocalDate rentalDate;
+    private LocalDate dueDate;
+    private LocalDate returnedDate;
+    private String status;
+    private double totalFee;
+    private long daysOverdue;  // computed field
+
+    public RentalDTO() {}
+
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+    public String getMovieId() { return movieId; }
+    public void setMovieId(String movieId) { this.movieId = movieId; }
+    public LocalDate getRentalDate() { return rentalDate; }
+    public void setRentalDate(LocalDate rentalDate) { this.rentalDate = rentalDate; }
+    public LocalDate getDueDate() { return dueDate; }
+    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+    public LocalDate getReturnedDate() { return returnedDate; }
+    public void setReturnedDate(LocalDate returnedDate) { this.returnedDate = returnedDate; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public double getTotalFee() { return totalFee; }
+    public void setTotalFee(double totalFee) { this.totalFee = totalFee; }
+    public long getDaysOverdue() { return daysOverdue; }
+    public void setDaysOverdue(long daysOverdue) { this.daysOverdue = daysOverdue; }
+
+    @Override public String toString() { return "RentalDTO{id='" + id + "', status='" + status + "'}"; }
+}
