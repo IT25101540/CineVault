@@ -286,11 +286,28 @@ export interface GenreRow {
 
     @media (max-width: 1024px) { .slider-card { flex: 0 0 calc(100% / 4 - 0.6rem); } }
     @media (max-width: 768px) {
-      .featured-hero { padding: 0 1.5rem 3rem; height: 65vh; }
+      .featured-hero { padding: 0 1.25rem 3rem; height: 70vh; min-height: 420px; }
+      .hero-content { max-width: 100%; }
+      .hero-synopsis { display: none; }
+      .hero-actions .btn { padding: 0.65rem 1.4rem; font-size: 0.9rem; }
       .slider-card { flex: 0 0 calc(100% / 3 - 0.6rem); }
-      .sliders-container, .category-tabs { padding: 0 1rem; }
+      .sliders-container { padding: 0 0.75rem; }
+      .slider-header { padding: 0 0.75rem 0.75rem; }
+      .slider-row { padding: 0.5rem 0.75rem 1rem; }
+      /* Show slider buttons on touch devices */
+      .slider-btn { opacity: 0.7; width: 36px; }
+      .testimonial-grid { grid-template-columns: 1fr; }
     }
-    @media (max-width: 480px) { .slider-card { flex: 0 0 calc(100% / 2 - 0.6rem); } }
+    @media (max-width: 480px) {
+      .featured-hero { height: 60vh; min-height: 360px; padding: 0 1rem 2.5rem; }
+      .hero-eyebrow { display: none; }
+      .hero-content h1 { font-size: clamp(1.8rem, 7vw, 2.5rem); }
+      .slider-card { flex: 0 0 calc(100% / 2 - 0.6rem); }
+      .section-title { font-size: clamp(1.75rem, 7vw, 2.5rem); }
+      .testimonial-text { font-size: 1rem; }
+      .testimonials-section { margin-top: 2.5rem; }
+    }
+
   `]
 })
 export class HomeComponent implements OnInit, OnDestroy {
