@@ -1,0 +1,9 @@
+usr-001|alice_johnson|alice@example.com|ef92b778bafe771207867|PREMIUM|true|2024-01-10T10:00
+usr-002|bob_smith|bob@example.com|5baa61e4c9b93f3f0682|FREE|true|2024-02-14T14:30
+usr-003|carol_white|carol@example.com|65e84be33532fb784c48|PREMIUM|true|2024-03-01T09:15
+usr-004|david_lee|david@example.com|aab3238922bcc25a6f60|FREE|true|2024-03-15T11:45
+usr-005|emily_chan|emily@example.com|9bf31c7ff062936a96d3|PREMIUM|true|2024-04-02T08:20
+usr-006|frank_miller|frank@example.com|c4ca4238a0b923820dcc|FREE|true|2024-04-10T17:00
+usr-007|grace_park|grace@example.com|c81e728d9d4c2f636f06|PREMIUM|true|2024-04-18T13:30
+usr-008|henry_nguyen|henry@example.com|eccbc87e4b5ce2fe2830|FREE|false|2024-05-01T10:00
+4dd59a9c-f9e8-46ea-bbc0-b79865a5deba|IT25101540|it25101540@my.sliit.lk|2c6678e1|PREMIUM|true|2026-05-07T22:07:55.584171500
