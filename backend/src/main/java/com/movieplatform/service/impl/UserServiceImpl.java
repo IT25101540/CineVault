@@ -68,12 +68,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO update(String id, String email, String password, String membershipType) {
+    public UserDTO update(String id, String email, String password, String membershipType, Boolean active) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found: " + id));
         if (email != null && !email.isBlank()) user.setEmail(email);
         if (password != null && !password.isBlank()) user.setPasswordHash(hashPassword(password));
         if (membershipType != null && !membershipType.isBlank()) user.setMembershipType(membershipType);
+        if (active != null) user.setActive(active);
         userRepository.save(user);
         return toDTO(user);
     }

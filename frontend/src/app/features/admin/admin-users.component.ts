@@ -54,7 +54,8 @@ import { Router } from '@angular/router';
                 <div class="dropdown" *ngIf="currentAdmin?.role === 'SUPER_ADMIN' || currentAdmin?.role === 'USER_ADMIN'">
                   <button class="btn btn-outline btn-xs" (click)="toggleMembership(u)">Change Plan</button>
                 </div>
-                <button class="btn btn-danger btn-sm" (click)="deactivate(u.id)" *ngIf="u.active">Deactivate</button>
+                <button class="btn btn-danger btn-sm" (click)="toggleActive(u)" *ngIf="u.active">Deactivate</button>
+                <button class="btn btn-outline btn-sm" (click)="toggleActive(u)" *ngIf="!u.active">Activate</button>
               </td>
             </tr>
           </tbody>
@@ -89,9 +90,19 @@ export class AdminUsersComponent implements OnInit {
   hasRole(roles: string[]): boolean {
     return this.currentAdmin ? roles.includes(this.currentAdmin.role) : false;
   }
-  deactivate(id: string) {
-    if (confirm('Deactivate this user?')) {
-      this.userService.delete(id).subscribe(() => { this.users = this.users.filter(u => u.id !== id); });
+  
+  toggleActive(user: User) {
+    const action = user.active ? 'Deactivate' : 'Activate';
+    if (confirm(`${action} this user?`)) {
+      this.userService.update(user.id, { active: !user.active }).subscribe({
+        next: (updated) => {
+          this.users = this.users.map(u => u.id === user.id ? updated : u);
+        },
+        error: (err) => {
+          console.error(`Failed to ${action.toLowerCase()} user`, err);
+          alert(`Failed to update user status.`);
+        }
+      });
     }
   }
 
