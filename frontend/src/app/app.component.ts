@@ -1,0 +1,311 @@
+import { Component } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { UserService } from './core/services/user.service';
+import { AdminService } from './core/services/admin.service';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
+  template: `
+    <div class="admin-topbar" *ngIf="currentAdmin">
+      <div class="flex-between">
+        <span class="badge badge-gold" style="font-size: 0.65rem;">Admin Mode</span>
+        <div class="admin-top-links">
+          <a routerLink="/admin/dashboard">Dashboard</a>
+          <a routerLink="/admin/users">Users</a>
+          <a routerLink="/admin/reviews">Reviews</a>
+          <a routerLink="/admin/rentals">Rentals</a>
+          <a (click)="logoutAdmin()" style="cursor:pointer; margin-left: 1rem; color: var(--danger);">Sign out Admin</a>
+        </div>
+      </div>
+    </div>
+    <nav class="navbar" [class.admin-navbar]="currentAdmin">
+      <!-- Left: Logo -->
+      <a class="navbar-brand" routerLink="/">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="4" ry="4"></rect>
+          <path d="M8 2v20 M16 2v20" opacity="0.3"></path>
+          <polygon points="10 9 15 12 10 15 10 9" fill="currentColor" stroke="none"></polygon>
+        </svg>
+        <div class="brand-text-wrap">
+          <span class="brand-text">CineVault</span>
+        </div>
+      </a>
+      
+      <!-- Center: Pill Navigation -->
+      <ul class="nav-links nav-pill">
+        <li><a routerLink="/" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">Home</a></li>
+        <li><a routerLink="/movies" routerLinkActive="active">Movies</a></li>
+        <li><a routerLink="/people" routerLinkActive="active">People</a></li>
+        <li><a routerLink="/membership" routerLinkActive="active">Membership</a></li>
+        <li><a routerLink="/about" routerLinkActive="active">About</a></li>
+      </ul>
+      
+      <!-- Right: Actions -->
+      <ul class="nav-actions">
+        <li *ngIf="!currentUser && !currentAdmin">
+          <a routerLink="/auth/login" class="btn btn-primary btn-sm btn-pill" style="border-radius: 50px; padding: 0.4rem 1.2rem;">Sign In</a>
+        </li>
+        <li *ngIf="currentUser">
+          <a [routerLink]="['/profile', currentUser.id]" class="user-link">
+            <span class="material-symbols-outlined" style="font-size: 1.1rem; margin-right: 4px;">account_circle</span>
+            {{ currentUser.username }}
+            <span class="membership-badge" *ngIf="currentUser.membershipType && currentUser.membershipType !== 'FREE'">
+              {{ currentUser.membershipType }}
+            </span>
+          </a>
+        </li>
+        <li *ngIf="currentUser">
+          <a (click)="logout()" style="cursor:pointer; margin-left:0.5rem;" class="text-muted text-sm">Sign out</a>
+        </li>
+
+        <li *ngIf="currentAdmin">
+          <a routerLink="/admin/dashboard" class="btn btn-primary btn-sm btn-pill" style="margin-left:.5rem; border-radius: 50px;">Dashboard</a>
+        </li>
+      </ul>
+    </nav>
+
+    <main>
+      <router-outlet/>
+    </main>
+
+    <footer class="app-footer">
+      <div class="container footer-content">
+        <div class="footer-brand">
+          <a routerLink="/" class="footer-logo">
+            <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="4" ry="4"></rect>
+              <path d="M8 2v20 M16 2v20" opacity="0.3"></path>
+              <polygon points="10 9 15 12 10 15 10 9" fill="currentColor" stroke="none"></polygon>
+            </svg>
+            <div class="brand-text-wrap">
+              <span class="brand-text">CineVault</span>
+            </div>
+          </a>
+          <p class="footer-tagline">Your ultimate platform for discovering, reviewing, and renting movies. Experience cinema like never before.</p>
+          <div class="social-links">
+            <a href="https://github.com/IT25101540/CineVault" target="_blank" rel="noopener noreferrer" class="social-icon" title="GitHub Repository">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            </a>
+            <a href="https://cloud.mongodb.com/v2/6a0206e0d40687ea2f06937d#/overview" target="_blank" rel="noopener noreferrer" class="social-icon" title="MongoDB Database">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+            </a>
+          </div>
+        </div>
+        
+        <div class="footer-col">
+          <h4>Project Details</h4>
+          <span class="footer-list-item">SE1020 &ndash; OOP</span>
+          <span class="footer-list-item">Angular 17</span>
+          <span class="footer-list-item">Spring Boot 3</span>
+          <span class="footer-list-item">MongoDB</span>
+          <span class="footer-list-item">Java 21 &amp; Maven 3.9</span>
+        </div>
+
+        <div class="footer-col">
+          <h4>Information</h4>
+          <a routerLink="/about" class="footer-list-item">About CineVault & Team</a>
+          <a href="mailto:contact@cinevault.local" class="footer-list-item">Contact Us</a>
+        </div>
+        
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <a routerLink="/movies" class="footer-list-item">Movies Catalogue</a>
+          <a routerLink="/people" class="footer-list-item">Directors &amp; Cast</a>
+          <a routerLink="/membership" class="footer-list-item">Membership Plans</a>
+          <a href="https://github.com/IT25101540/CineVault" target="_blank" rel="noopener noreferrer" class="footer-list-item">GitHub Repository</a>
+          <a href="https://cloud.mongodb.com/v2/6a0206e0d40687ea2f06937d#/overview" target="_blank" rel="noopener noreferrer" class="footer-list-item">MongoDB Database</a>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <div class="container flex-between">
+          <div class="copyright-stack">
+            <p class="copyright-text">&copy; 2026 Group WD251 &middot; SLIIT &middot; SE1020 Object Oriented Programming</p>
+            <p class="copyright-sub">Built with Angular &middot; Spring Boot 3 &middot; MongoDB &middot; GitHub Actions CI/CD</p>
+          </div>
+          <p class="designer-text">Final Design &amp; Updated by <strong>Gunathilaka H.D.T.T.</strong></p>
+        </div>
+      </div>
+    </footer>
+  `,
+  styles: [`
+    .navbar {
+      position: sticky; top: 0; z-index: 1000;
+      background: rgba(10,10,10,0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(234, 229, 208, 0.05);
+      padding: 0 2rem; height: 75px;
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    }
+    .admin-navbar { border-bottom: 1px solid var(--accent); }
+    .admin-topbar {
+      background: #000; border-bottom: 1px solid var(--accent);
+      padding: 0.4rem 2rem; font-size: 0.8rem;
+    }
+    .admin-top-links { display: flex; gap: 1rem; align-items: center; }
+    .admin-top-links a { color: var(--text-muted); text-decoration: none; transition: color var(--transition); }
+    .admin-top-links a:hover { color: var(--text); }
+    .navbar-brand {
+      display: flex; align-items: center; gap: 0.5rem;
+      text-decoration: none; justify-self: start;
+    }
+    .brand-icon {
+      width: 28px; height: 28px;
+      color: var(--accent);
+      filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.4));
+    }
+    .brand-text-wrap { display: flex; align-items: baseline; }
+    .brand-text {
+      font-family: var(--font-display);
+      font-size: 1.55rem;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, #eae5d0 0%, #a1a1aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: lowercase;
+    }
+    
+    .nav-pill {
+      display: flex; align-items: center; gap: 0.2rem; list-style: none;
+      background: rgba(234, 229, 208, 0.03); 
+      border: 1px solid rgba(234, 229, 208, 0.05);
+      border-radius: 50px;
+      padding: 0.4rem 0.8rem;
+      margin: 0; justify-self: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    .nav-pill > li > a {
+      color: var(--text-muted); font-family: var(--font-sans); font-size: 0.875rem; font-weight: 450;
+      padding: 0.5rem 1.2rem; border-radius: 50px;
+      transition: color var(--transition); text-decoration: none; letter-spacing: 0.01em;
+      position: relative; display: block;
+    }
+    .nav-pill > li > a::after {
+      content: ''; position: absolute; left: 50%; bottom: 4px; width: 0; height: 2px;
+      background: var(--accent); transition: all 0.3s ease;
+      transform: translateX(-50%); border-radius: 2px;
+    }
+    .nav-pill > li > a:hover, .nav-pill > li > a.active { color: var(--text); }
+    .nav-pill > li > a:hover::after, .nav-pill > li > a.active::after { width: calc(100% - 2.4rem); }
+
+    .nav-actions {
+      display: flex; align-items: center; list-style: none; margin: 0; padding: 0;
+      justify-self: end; gap: 0.5rem;
+    }
+    .user-link {
+      color: var(--text); font-weight: 600; text-decoration: none; font-size: 0.875rem;
+      background: var(--surface-2); padding: 0.4rem 1rem; border-radius: 50px;
+      display: flex; align-items: center; border: 1px solid rgba(234, 229, 208, 0.05);
+      transition: all 0.3s ease;
+    }
+    .user-link:hover { background: rgba(234, 229, 208, 0.08); border-color: var(--accent); }
+    .membership-badge {
+      font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
+      background: linear-gradient(135deg, #ffd700, #b8860b);
+      color: #000; padding: 2px 8px; border-radius: 4px; margin-left: 8px;
+      letter-spacing: 0.05em; box-shadow: 0 2px 8px rgba(184, 134, 11, 0.3);
+    }
+    
+    @media(max-width: 900px){ 
+      .navbar { display: flex; flex-direction: column; height: auto; padding: 1rem; gap: 1rem; }
+      .admin-topbar { padding: 0.4rem 1rem; } 
+    }
+
+    .app-footer {
+      position: relative; background: var(--surface); color: var(--text);
+      font-family: var(--font-sans); margin-top: 5rem;
+      border-top: 1px solid rgba(234, 229, 208, 0.05); overflow: hidden;
+    }
+    .app-footer::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.5;
+    }
+    .footer-content {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 4rem;
+      padding: 4rem 1.5rem; max-width: 1200px; margin: 0 auto;
+    }
+    .footer-brand { max-width: 320px; }
+    .footer-logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      text-decoration: none; margin-bottom: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+    .footer-logo:hover { transform: translateY(-2px); }
+    .footer-tagline {
+      color: var(--text-muted); font-size: 0.9rem; line-height: 1.7; margin-bottom: 1.5rem; text-align: left;
+    }
+    .social-links { display: flex; gap: 1rem; }
+    .social-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--surface-2); color: var(--text-muted);
+      transition: all 0.3s ease;
+    }
+    .social-icon:hover {
+      background: var(--accent); color: #eae5d0;
+      transform: translateY(-3px); box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+    }
+    
+    .footer-col { text-align: left; }
+    .footer-col h4 {
+      font-family: var(--font-display);
+      color: #eae5d0; font-size: 1.25rem; font-weight: 500;
+      margin-bottom: 1.5rem; letter-spacing: -0.02em; text-align: left;
+    }
+    .footer-list-item {
+      display: block; color: var(--text-muted); text-decoration: none;
+      font-size: 0.9rem; margin-bottom: 0.8rem; transition: color 0.2s ease;
+      text-align: left; position: relative; width: fit-content;
+    }
+    a.footer-list-item::after {
+      content: ''; position: absolute; left: 0; bottom: -2px; width: 0; height: 1px;
+      background: var(--accent); transition: width 0.3s ease;
+    }
+    a.footer-list-item:hover { color: var(--accent); transform: translateX(4px); }
+    a.footer-list-item:hover::after { width: 100%; }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(234, 229, 208, 0.05);
+      padding: 1.5rem 0; background: rgba(0, 0, 0, 0.2);
+    }
+    .footer-bottom .flex-between { flex-wrap: wrap; gap: 1rem; align-items: center; }
+    .copyright-stack { display: flex; flex-direction: column; gap: 0.3rem; }
+    .copyright-text { color: var(--text-muted); font-size: 0.85rem; margin: 0; font-weight: 500; }
+    .copyright-sub { color: var(--text-muted); font-size: 0.75rem; margin: 0; opacity: 0.7; }
+    
+    .designer-text {
+      color: var(--text-muted); font-size: 0.85rem; margin: 0;
+      background: var(--surface-2); padding: 0.4rem 0.8rem; border-radius: 20px;
+    }
+    .designer-text strong { color: var(--accent); font-weight: 600; }
+    
+    @media(max-width: 992px) {
+      .footer-content { grid-template-columns: 1fr 1fr; }
+    }
+    @media(max-width: 768px) {
+      .footer-content { grid-template-columns: 1fr; gap: 2.5rem; }
+      .footer-bottom .flex-between { flex-direction: column; text-align: center; justify-content: center; align-items: center; gap: 1rem; }
+      .copyright-stack { align-items: center; text-align: center; }
+    }
+  `]
+})
+export class AppComponent {
+  constructor(private userService: UserService, private adminService: AdminService, private router: Router) { }
+  get currentUser() { return this.userService.currentUser; }
+  get currentAdmin() { return this.adminService.currentAdmin; }
+
+  logout() {
+    this.userService.logout();
+    this.router.navigate(['/']);
+  }
+
+  logoutAdmin() {
+    this.adminService.logout();
+    this.userService.logout(); // Ensure user is also logged out
+    this.router.navigate(['/']);
+  }
+}
