@@ -96,6 +96,19 @@ import { Movie } from '../../core/models/models';
       justify-content: center; pointer-events: none; z-index: 5;
     }
     .card { position: relative; overflow: hidden; }
+    
+    /* Mobile enhancements for genre pills */
+    @media (max-width: 768px) {
+      .genre-pills { 
+        display: flex; 
+        flex-wrap: nowrap; 
+        overflow-x: auto; 
+        padding-bottom: 0.5rem; 
+        scrollbar-width: none; /* Firefox */
+      }
+      .genre-pills::-webkit-scrollbar { display: none; }
+      .pill { flex: 0 0 auto; white-space: nowrap; }
+    }
   `]
 })
 export class MovieListComponent implements OnInit {
