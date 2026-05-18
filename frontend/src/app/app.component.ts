@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UserService } from './core/services/user.service';
@@ -10,20 +10,20 @@ import { AdminService } from './core/services/admin.service';
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   template: `
     <div class="admin-topbar" *ngIf="currentAdmin">
-      <div class="flex-between">
+      <div class="admin-topbar-inner">
         <span class="badge badge-gold" style="font-size: 0.65rem;">Admin Mode</span>
         <div class="admin-top-links">
           <a routerLink="/admin/dashboard">Dashboard</a>
           <a routerLink="/admin/users">Users</a>
           <a routerLink="/admin/reviews">Reviews</a>
           <a routerLink="/admin/rentals">Rentals</a>
-          <a (click)="logoutAdmin()" style="cursor:pointer; margin-left: 1rem; color: var(--danger);">Sign out Admin</a>
+          <a (click)="logoutAdmin()" style="cursor:pointer; color: var(--danger);">Sign out</a>
         </div>
       </div>
     </div>
     <nav class="navbar" [class.admin-navbar]="currentAdmin">
       <!-- Left: Logo -->
-      <a class="navbar-brand" routerLink="/">
+      <a class="navbar-brand" routerLink="/" (click)="closeMenu()">
         <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="2" width="20" height="20" rx="4" ry="4"></rect>
           <path d="M8 2v20 M16 2v20" opacity="0.3"></path>
@@ -33,8 +33,8 @@ import { AdminService } from './core/services/admin.service';
           <span class="brand-text">CineVault</span>
         </div>
       </a>
-      
-      <!-- Center: Pill Navigation -->
+
+      <!-- Center: Pill Navigation (Desktop) -->
       <ul class="nav-links nav-pill">
         <li><a routerLink="/" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">Home</a></li>
         <li><a routerLink="/movies" routerLinkActive="active">Movies</a></li>
@@ -42,11 +42,11 @@ import { AdminService } from './core/services/admin.service';
         <li><a routerLink="/membership" routerLinkActive="active">Membership</a></li>
         <li><a routerLink="/about" routerLinkActive="active">About</a></li>
       </ul>
-      
-      <!-- Right: Actions -->
+
+      <!-- Right: Actions (Desktop) -->
       <ul class="nav-actions">
         <li *ngIf="!currentUser && !currentAdmin">
-          <a routerLink="/auth/login" class="btn btn-primary btn-sm btn-pill" style="border-radius: 50px; padding: 0.4rem 1.2rem;">Sign In</a>
+          <a routerLink="/auth/login" class="btn btn-primary btn-sm" style="border-radius: 50px; padding: 0.4rem 1.2rem;">Sign In</a>
         </li>
         <li *ngIf="currentUser">
           <a [routerLink]="['/profile', currentUser.id]" class="user-link">
@@ -58,14 +58,45 @@ import { AdminService } from './core/services/admin.service';
           </a>
         </li>
         <li *ngIf="currentUser">
-          <a (click)="logout()" style="cursor:pointer; margin-left:0.5rem;" class="text-muted text-sm">Sign out</a>
+          <a (click)="logout()" style="cursor:pointer;" class="text-muted text-sm">Sign out</a>
         </li>
-
         <li *ngIf="currentAdmin">
-          <a routerLink="/admin/dashboard" class="btn btn-primary btn-sm btn-pill" style="margin-left:.5rem; border-radius: 50px;">Dashboard</a>
+          <a routerLink="/admin/dashboard" class="btn btn-primary btn-sm" style="border-radius: 50px;">Dashboard</a>
         </li>
       </ul>
+
+      <!-- Hamburger Button (Mobile only) -->
+      <button class="hamburger" (click)="toggleMenu()" [class.open]="menuOpen" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
     </nav>
+
+    <!-- Mobile Drawer Overlay -->
+    <div class="mobile-overlay" [class.active]="menuOpen" (click)="closeMenu()"></div>
+
+    <!-- Mobile Drawer -->
+    <div class="mobile-drawer" [class.open]="menuOpen">
+      <ul class="mobile-nav-links">
+        <li><a routerLink="/" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active" (click)="closeMenu()">Home</a></li>
+        <li><a routerLink="/movies" routerLinkActive="active" (click)="closeMenu()">Movies</a></li>
+        <li><a routerLink="/people" routerLinkActive="active" (click)="closeMenu()">People</a></li>
+        <li><a routerLink="/membership" routerLinkActive="active" (click)="closeMenu()">Membership</a></li>
+        <li><a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">About</a></li>
+      </ul>
+      <div class="mobile-nav-actions">
+        <ng-container *ngIf="!currentUser && !currentAdmin">
+          <a routerLink="/auth/login" class="btn btn-primary w-full" style="justify-content:center;" (click)="closeMenu()">Sign In</a>
+        </ng-container>
+        <ng-container *ngIf="currentUser">
+          <a [routerLink]="['/profile', currentUser.id]" class="user-link" style="width:100%; justify-content:center;" (click)="closeMenu()">{{ currentUser.username }}</a>
+          <a (click)="logout(); closeMenu()" class="btn btn-outline w-full" style="justify-content:center; cursor:pointer;">Sign Out</a>
+        </ng-container>
+        <ng-container *ngIf="currentAdmin">
+          <a routerLink="/admin/dashboard" class="btn btn-primary w-full" style="justify-content:center;" (click)="closeMenu()">Dashboard</a>
+          <a (click)="logoutAdmin(); closeMenu()" class="btn btn-outline w-full" style="justify-content:center; cursor:pointer; color:var(--danger);">Sign out Admin</a>
+        </ng-container>
+      </div>
+    </div>
 
     <main>
       <router-outlet/>
@@ -144,6 +175,7 @@ import { AdminService } from './core/services/admin.service';
       background: #000; border-bottom: 1px solid var(--accent);
       padding: 0.4rem 2rem; font-size: 0.8rem;
     }
+    .admin-topbar-inner { display: flex; align-items: center; justify-content: space-between; }
     .admin-top-links { display: flex; gap: 1rem; align-items: center; }
     .admin-top-links a { color: var(--text-muted); text-decoration: none; transition: color var(--transition); }
     .admin-top-links a:hover { color: var(--text); }
@@ -152,28 +184,22 @@ import { AdminService } from './core/services/admin.service';
       text-decoration: none; justify-self: start;
     }
     .brand-icon {
-      width: 28px; height: 28px;
-      color: var(--accent);
+      width: 28px; height: 28px; color: var(--accent);
       filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.4));
     }
     .brand-text-wrap { display: flex; align-items: baseline; }
     .brand-text {
-      font-family: var(--font-display);
-      font-size: 1.55rem;
-      font-weight: 600;
+      font-family: var(--font-display); font-size: 1.55rem; font-weight: 600;
       letter-spacing: -0.04em;
       background: linear-gradient(135deg, #eae5d0 0%, #a1a1aa 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       text-transform: lowercase;
     }
-    
     .nav-pill {
       display: flex; align-items: center; gap: 0.2rem; list-style: none;
-      background: rgba(234, 229, 208, 0.03); 
+      background: rgba(234, 229, 208, 0.03);
       border: 1px solid rgba(234, 229, 208, 0.05);
-      border-radius: 50px;
-      padding: 0.4rem 0.8rem;
+      border-radius: 50px; padding: 0.4rem 0.8rem;
       margin: 0; justify-self: center;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
@@ -190,7 +216,6 @@ import { AdminService } from './core/services/admin.service';
     }
     .nav-pill > li > a:hover, .nav-pill > li > a.active { color: var(--text); }
     .nav-pill > li > a:hover::after, .nav-pill > li > a.active::after { width: calc(100% - 2.4rem); }
-
     .nav-actions {
       display: flex; align-items: center; list-style: none; margin: 0; padding: 0;
       justify-self: end; gap: 0.5rem;
@@ -208,10 +233,57 @@ import { AdminService } from './core/services/admin.service';
       color: #000; padding: 2px 8px; border-radius: 4px; margin-left: 8px;
       letter-spacing: 0.05em; box-shadow: 0 2px 8px rgba(184, 134, 11, 0.3);
     }
-    
-    @media(max-width: 900px){ 
-      .navbar { display: flex; flex-direction: column; height: auto; padding: 1rem; gap: 1rem; }
-      .admin-topbar { padding: 0.4rem 1rem; } 
+    /* Hamburger - hidden on desktop */
+    .hamburger {
+      display: none; flex-direction: column; justify-content: space-between;
+      width: 28px; height: 20px; background: transparent; border: none;
+      cursor: pointer; padding: 0; z-index: 1100;
+      justify-self: end;
+    }
+    .hamburger span {
+      display: block; width: 100%; height: 2px;
+      background: var(--text); border-radius: 2px;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform-origin: center;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .hamburger.open span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+    /* Mobile Drawer */
+    .mobile-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px); z-index: 1050; opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .mobile-overlay.active { opacity: 1; }
+    .mobile-drawer {
+      display: none; position: fixed; top: 0; right: -100%; width: min(320px, 85vw);
+      height: 100dvh; background: rgba(10,10,10,0.98);
+      backdrop-filter: blur(24px); border-left: 1px solid rgba(234,229,208,0.08);
+      z-index: 1100; padding: 5rem 1.5rem 2rem; flex-direction: column; gap: 0;
+      transition: right 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      overflow-y: auto;
+    }
+    .mobile-drawer.open { right: 0; }
+    .mobile-nav-links { list-style: none; margin: 0; padding: 0; margin-bottom: 2rem; }
+    .mobile-nav-links li { border-bottom: 1px solid rgba(234,229,208,0.05); }
+    .mobile-nav-links li a {
+      display: block; padding: 1rem 0; color: var(--text-muted);
+      font-family: var(--font-display); font-size: 1.5rem; font-weight: 500;
+      text-decoration: none; text-transform: lowercase; letter-spacing: -0.02em;
+      transition: color 0.2s, transform 0.2s;
+    }
+    .mobile-nav-links li a:hover, .mobile-nav-links li a.active { color: var(--text); transform: translateX(6px); }
+    .mobile-nav-actions { display: flex; flex-direction: column; gap: 0.75rem; }
+    @media(max-width: 860px) {
+      .navbar { padding: 0 1.25rem; grid-template-columns: 1fr auto; }
+      .nav-pill, .nav-actions { display: none; }
+      .hamburger { display: flex; }
+      .mobile-overlay { display: block; pointer-events: none; }
+      .mobile-overlay.active { pointer-events: all; }
+      .mobile-drawer { display: flex; }
+      .admin-topbar { padding: 0.4rem 1.25rem; font-size: 0.75rem; }
+      .admin-top-links { gap: 0.6rem; flex-wrap: wrap; }
     }
 
     .app-footer {
@@ -294,18 +366,28 @@ import { AdminService } from './core/services/admin.service';
   `]
 })
 export class AppComponent {
+  menuOpen = false;
+
   constructor(private userService: UserService, private adminService: AdminService, private router: Router) { }
   get currentUser() { return this.userService.currentUser; }
   get currentAdmin() { return this.adminService.currentAdmin; }
 
+  toggleMenu() { this.menuOpen = !this.menuOpen; }
+  closeMenu()  { this.menuOpen = false; }
+
+  @HostListener('document:keydown.escape')
+  onEscape() { this.closeMenu(); }
+
   logout() {
     this.userService.logout();
     this.router.navigate(['/']);
+    this.closeMenu();
   }
 
   logoutAdmin() {
     this.adminService.logout();
-    this.userService.logout(); // Ensure user is also logged out
+    this.userService.logout();
     this.router.navigate(['/']);
+    this.closeMenu();
   }
 }
