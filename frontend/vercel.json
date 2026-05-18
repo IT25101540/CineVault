@@ -1,5 +1,7 @@
 {
+  "outputDirectory": "dist/cinevault-frontend/browser",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
+
