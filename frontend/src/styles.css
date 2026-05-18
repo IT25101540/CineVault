@@ -528,7 +528,44 @@ tbody tr:hover td { background: rgba(249,115,22,0.03); }
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .container { padding: 0 1rem; }
-  .movie-grid { grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); }
+  .movie-grid { grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 1rem; }
   .kpi-grid { grid-template-columns: repeat(2,1fr); }
   .form-card { padding: 1.25rem; }
+
+  /* Tables: horizontal scroll on mobile */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Search bar stacks */
+  .search-bar { flex-direction: column; }
+  .search-bar .form-control { max-width: 100%; }
+
+  /* Page header tighter on mobile */
+  .page-header { padding: 1.5rem 0 1rem; margin-bottom: 1.5rem; }
+
+  /* Buttons: full-width in forms on small screens */
+  .form-card .btn { width: 100%; justify-content: center; }
+
+  /* KPI: 2 cols on small, 1 col on very small */
+  .kpi-value { font-size: 2.25rem; }
+}
+
+@media (max-width: 480px) {
+  html { font-size: 15px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .movie-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .genre-pills { gap: 0.4rem; }
+  .pill { font-size: 0.72rem; padding: 0.3rem 0.7rem; }
+  .card-img, .card-img-placeholder { height: 200px; }
+  .section-heading { font-size: clamp(1.75rem, 7vw, 2.5rem); }
+  /* Prevent text overflow on very small screens */
+  h1, h2, h3 { word-break: break-word; }
+  .btn-lg { padding: 0.7rem 1.4rem; font-size: 0.95rem; }
+}
+
+/* Touch targets: min 44px for accessibility on mobile */
+@media (hover: none) and (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .pill { min-height: 36px; padding: 0.45rem 1rem; }
+  .nav-pill > li > a { min-height: 44px; display: flex; align-items: center; }
+  a.footer-list-item { min-height: 44px; display: flex; align-items: center; }
 }
