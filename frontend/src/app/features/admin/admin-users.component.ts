@@ -55,7 +55,7 @@ import { Router } from '@angular/router';
                   <button class="btn btn-outline btn-xs" (click)="toggleMembership(u)">Change Plan</button>
                 </div>
                 <button class="btn btn-danger btn-sm" (click)="toggleActive(u)" *ngIf="u.active">Deactivate</button>
-                <button class="btn btn-outline btn-sm" (click)="toggleActive(u)" *ngIf="!u.active">Activate</button>
+                <button class="btn btn-primary btn-sm" (click)="toggleActive(u)" *ngIf="!u.active">Activate</button>
               </td>
             </tr>
           </tbody>
