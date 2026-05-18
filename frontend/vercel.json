@@ -1,7 +1,9 @@
 {
   "outputDirectory": "dist/cinevault-frontend/browser",
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://cinevault-xlp6.onrender.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
+
 
