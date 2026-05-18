@@ -1,0 +1,5 @@
+# admins.txt – CineVault sample data
+# Format: id|username|email|passwordHash|role|permissionLevel|active
+adm-001|superadmin|admin@cinevault.com|ef92b778bafe771207867|SUPER_ADMIN|5|true
+adm-002|moderator|mod@cinevault.com|5baa61e4c9b93f3f0682|MODERATOR|2|true
+adm-003|content_admin|content@cinevault.com|aab3238922bcc25a6f60|MODERATOR|3|true
