@@ -10,14 +10,16 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * AdminRepository – MongoDB persistence.
+ * Repository layer for handling Admin database persistence operations (MongoDB)
  */
 @Repository
 public interface AdminRepository extends MongoRepository<Admin, String> {
+    
+    /** Custom query to find Admin by username, ensuring the document possesses an admin role field */
     @Query("{ 'username' : { $regex: ?0, $options: 'i' }, 'role': { $exists: true } }")
     Optional<Admin> findByUsernameIgnoreCase(String username);
     
-    // Only fetch documents that have a 'role' field (filters out standard users)
+    /** Fetches only documents that represent administrators by evaluating presence of the 'role' field */
     @Query("{ 'role' : { $exists: true } }")
     List<Admin> findAllAdmins();
 }

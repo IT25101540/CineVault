@@ -10,28 +10,28 @@ import java.util.Objects;
  * permissionLevel changed only via grantPermission() (Encapsulation).
  */
 @Document(collection = "users")
-public class Admin extends User {
+public class Admin extends User { // Extends base User class (Inheritance)
 
     private String role;           // SUPER_ADMIN | MODERATOR
-    private int permissionLevel;   // private – Encapsulation
+    private int permissionLevel;   // Private access enforces Encapsulation
     private LocalDateTime lastLogin;
 
     public Admin() { super(); }
 
     public Admin(String id, String username, String email, String passwordHash,
                  String role, int permissionLevel) {
-        super(id, username, email, passwordHash, "ADMIN");
+        super(id, username, email, passwordHash, "ADMIN"); // Call parent constructor
         this.role = role;
         this.permissionLevel = permissionLevel;
     }
 
-    /** Encapsulation: permission changed only via controlled method */
+    /** Encapsulated setter to enforce permission level bounds */
     public void grantPermission(int level) {
         if (level < 1 || level > 5) throw new IllegalArgumentException("Invalid permission level");
         this.permissionLevel = level;
     }
 
-    /** Polymorphism: behaviour differs per role */
+    /** Evaluates role-based privileges dynamically (Polymorphism) */
     public boolean canDelete(String entityType) {
         return "SUPER_ADMIN".equals(role) || (permissionLevel >= 3);
     }

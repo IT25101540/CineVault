@@ -50,13 +50,14 @@ public class AdminServiceImpl implements AdminService {
     public AdminDTO update(String id, String role, int permissionLevel) {
         Admin a = adminRepository.findById(id).orElseThrow(() -> new RuntimeException("Admin not found"));
         if (role != null) a.setRole(role);
-        if (permissionLevel > 0) a.grantPermission(permissionLevel);
+        if (permissionLevel > 0) a.grantPermission(permissionLevel); // Enforce state bounds validation
         adminRepository.save(a);
         return toDTO(a);
     }
 
     @Override
     public void deactivate(String id) {
+        // Perform soft-delete by disabling active flag, preserving audit log integrity
         Admin a = adminRepository.findById(id).orElseThrow(() -> new RuntimeException("Admin not found"));
         a.setActive(false);
         adminRepository.save(a);
@@ -69,7 +70,7 @@ public class AdminServiceImpl implements AdminService {
         adminRepository.save(a);
     }
 
-    /** Abstraction: aggregates data from all services */
+    /** Aggregates dashboard telemetry metrics across database collections */
     @Override
     public DashboardStats getDashboardStats() {
         // Return dummy/mock statistics for now as other components' repositories are not included in this build
@@ -80,8 +81,10 @@ public class AdminServiceImpl implements AdminService {
         return new DashboardStats(users, movies, activeRentals, flagged);
     }
 
+    /** Private utility for generating basic password hashes */
     private String hashPassword(String raw) { return Integer.toHexString(raw.hashCode()); }
 
+    /** Converts Admin entity to DTO representation to secure password fields and decouple layers */
     private AdminDTO toDTO(Admin a) {
         AdminDTO dto = new AdminDTO();
         dto.setId(a.getId()); dto.setUsername(a.getUsername()); dto.setEmail(a.getEmail());

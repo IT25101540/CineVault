@@ -32,7 +32,7 @@ public class AdminRestController {
         this.promoCodeRepository = promoCodeRepository;
     }
 
-    /** POST /api/admin/login – Admin authentication */
+    /** POST /api/admin/login - Authenticates credentials and starts admin session */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         java.util.Optional<AdminDTO> result = adminService.login(
@@ -46,19 +46,19 @@ public class AdminRestController {
         }
     }
 
-    /** GET /api/admin/dashboard – Aggregate stats for dashboard */
+    /** GET /api/admin/dashboard - Fetches aggregated system telemetry statistics */
     @GetMapping("/dashboard")
     public ResponseEntity<DashboardStats> dashboard() {
         return ResponseEntity.ok(adminService.getDashboardStats());
     }
 
-    /** GET /api/admin – List all admins */
+    /** GET /api/admin - Retrieve list of all active administrators */
     @GetMapping
     public ResponseEntity<List<AdminDTO>> findAll() {
         return ResponseEntity.ok(adminService.findAll());
     }
 
-    /** GET /api/admin/{id} – Get admin by ID */
+    /** GET /api/admin/{id} - Fetch single admin record by primary key */
     @GetMapping("/{id}")
     public ResponseEntity<AdminDTO> findById(@PathVariable String id) {
         return adminService.findById(id)
@@ -66,7 +66,7 @@ public class AdminRestController {
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found: " + id));
     }
 
-    /** POST /api/admin/register – Register a new admin (super-admin only) */
+    /** POST /api/admin/register - Create and save a new administrator profile */
     @PostMapping("/register")
     public ResponseEntity<AdminDTO> register(@RequestBody Map<String, Object> body) {
         AdminDTO dto = adminService.register(
@@ -79,7 +79,7 @@ public class AdminRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
-    /** PUT /api/admin/{id} – Update admin role/permissions */
+    /** PUT /api/admin/{id} - Modify authorization role and permission level of an admin */
     @PutMapping("/{id}")
     public ResponseEntity<AdminDTO> update(@PathVariable String id,
                                             @RequestBody Map<String, Object> body) {
@@ -90,7 +90,7 @@ public class AdminRestController {
         ));
     }
 
-    /** DELETE /api/admin/{id} – Deactivate admin (super-admin only) */
+    /** DELETE /api/admin/{id} - Deactivate administrator account to preserve associated activity logs (Soft-Delete) */
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> delete(@PathVariable String id) {
         adminService.deactivate(id);
