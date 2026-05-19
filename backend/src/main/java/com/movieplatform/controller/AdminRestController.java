@@ -91,10 +91,27 @@ public class AdminRestController {
         return ResponseEntity.ok(Map.of("message", "Admin deactivated successfully"));
     }
 
-    /** POST /api/admin/{id}/activate – Activate admin (super-admin only) */
     @PostMapping("/{id}/activate")
     public ResponseEntity<Map<String, String>> activate(@PathVariable String id) {
         adminService.activate(id);
         return ResponseEntity.ok(Map.of("message", "Admin activated successfully"));
+    }
+
+    /** GET /api/admin/revenue – Get revenue stats */
+    @GetMapping("/revenue")
+    public ResponseEntity<Map<String, Double>> getRevenueStats(@org.springframework.beans.factory.annotation.Autowired com.movieplatform.service.RevenueService revenueService) {
+        return ResponseEntity.ok(revenueService.getRevenueStats());
+    }
+
+    /** POST /api/admin/promocodes – Generate a promo code */
+    @PostMapping("/promocodes")
+    public ResponseEntity<com.movieplatform.model.PromoCode> generatePromoCode(
+            @RequestBody Map<String, Object> body,
+            @org.springframework.beans.factory.annotation.Autowired com.movieplatform.repository.PromoCodeRepository promoRepo) {
+        
+        String code = (String) body.get("code");
+        double discount = Double.parseDouble(body.get("discountPercentage").toString());
+        com.movieplatform.model.PromoCode promo = new com.movieplatform.model.PromoCode(null, code, discount, true);
+        return ResponseEntity.ok(promoRepo.save(promo));
     }
 }
