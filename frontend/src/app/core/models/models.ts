@@ -56,6 +56,8 @@ export interface Rental {
   status: 'ACTIVE' | 'RETURNED' | 'OVERDUE';
   totalFee: number;
   daysOverdue: number;
+  paymentMethod?: string;
+  promoCode?: string;
 }
 
 export interface Admin {

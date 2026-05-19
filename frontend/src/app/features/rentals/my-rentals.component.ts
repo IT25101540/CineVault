@@ -10,8 +10,12 @@ import { Rental } from '../../core/models/models';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="container">
-      <div class="page-header"><h2>My Rentals</h2></div>
+    <div class="container" style="padding-top:2.5rem;padding-bottom:4rem;">
+      <div class="page-header" style="margin-bottom:2rem;">
+        <p class="eyebrow" style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.5rem;">Activity</p>
+        <h2>My rentals</h2>
+      </div>
+      
       <div class="spinner-wrap" *ngIf="loading"><div class="spinner"></div></div>
 
       <div class="table-wrap" *ngIf="!loading && rentals.length">
@@ -21,33 +25,273 @@ import { Rental } from '../../core/models/models';
           </thead>
           <tbody>
             <tr *ngFor="let r of rentals">
-              <td><a [routerLink]="['/movies', r.movieId]" class="text-accent">{{ r.movieTitle || r.movieId }}</a></td>
-              <td class="text-xs text-muted">{{ r.rentalDate | date:'dd MMM' }}</td>
-              <td class="text-xs text-muted">{{ r.dueDate | date:'dd MMM' }}</td>
-              <td class="text-xs text-muted">{{ r.returnedDate ? (r.returnedDate | date:'dd MMM') : '—' }}</td>
+              <td><a [routerLink]="['/movies', r.movieId]" class="text-accent" style="font-weight: 500;">{{ r.movieTitle || r.movieId }}</a></td>
+              <td class="text-xs text-muted">{{ r.rentalDate | date:'dd MMM yyyy' }}</td>
+              <td class="text-xs text-muted">{{ r.dueDate | date:'dd MMM yyyy' }}</td>
+              <td class="text-xs text-muted">{{ r.returnedDate ? (r.returnedDate | date:'dd MMM yyyy') : '—' }}</td>
               <td>
                 <span class="badge badge-green"  *ngIf="r.status === 'ACTIVE'">Active</span>
                 <span class="badge badge-gray"   *ngIf="r.status === 'RETURNED'">Returned</span>
                 <span class="badge badge-red"    *ngIf="r.status === 'OVERDUE'">Overdue</span>
               </td>
-              <td class="text-sm">{{ r.totalFee > 0 ? ('LKR ' + (r.totalFee | number:'1.2-2')) : '—' }}</td>
+              <td class="text-sm font-semibold">{{ r.totalFee > 0 ? ('LKR ' + (r.totalFee | number:'1.2-2')) : '—' }}</td>
               <td>
-                <a *ngIf="r.status === 'ACTIVE'" [routerLink]="['/rentals/return', r.id]" class="btn btn-outline btn-sm">Return</a>
+                <div style="display:flex;gap:.5rem;align-items:center;">
+                  <a *ngIf="r.status === 'ACTIVE'" [routerLink]="['/rentals/return', r.id]" class="btn btn-outline btn-sm">Return</a>
+                  <button (click)="openInvoice(r)" class="btn btn-outline btn-sm" style="border-color:var(--accent);color:var(--accent);">Invoice</button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <p *ngIf="!loading && !rentals.length" class="text-muted" style="padding:3rem 0;">
-        No rentals yet. <a routerLink="/movies">Browse movies →</a>
+      <p *ngIf="!loading && !rentals.length" class="text-muted" style="padding:3rem 0;text-align:center;">
+        No rentals yet. <a routerLink="/movies" class="text-accent" style="text-decoration:none;font-weight:600;">Browse movies →</a>
       </p>
+
+      <!-- Detailed Premium Invoice Modal -->
+      <div class="modal-overlay" *ngIf="selectedRental" (click)="closeInvoice()">
+        <div class="modal-box invoice-box" (click)="$event.stopPropagation()">
+          <div class="invoice-header">
+            <div class="brand">
+              <span class="brand-vault">CINE</span><span class="brand-title">VAULT</span>
+            </div>
+            <div class="invoice-tag">
+              <h3>INVOICE</h3>
+              <p class="invoice-num">#{{ selectedRental.id.substring(0, 8).toUpperCase() }}</p>
+            </div>
+          </div>
+
+          <div class="divider-dashed"></div>
+
+          <div class="invoice-meta-grid">
+            <div>
+              <span class="meta-lbl">BILLED TO</span>
+              <p class="meta-val font-semibold">{{ selectedRental.username || 'Valued Customer' }}</p>
+              <p class="meta-email text-muted text-xs">{{ selectedRental.userEmail || 'customer@cinevault.com' }}</p>
+            </div>
+            <div style="text-align: right;">
+              <span class="meta-lbl">INVOICE DATE</span>
+              <p class="meta-val">{{ selectedRental.rentalDate | date:'dd MMM yyyy' }}</p>
+              <span class="meta-lbl" style="margin-top: .5rem; display: block;">DUE DATE</span>
+              <p class="meta-val">{{ selectedRental.dueDate | date:'dd MMM yyyy' }}</p>
+            </div>
+          </div>
+
+          <div class="invoice-table-wrap">
+            <table class="invoice-bill-table">
+              <thead>
+                <tr>
+                  <th>Item / Description</th>
+                  <th style="text-align: right;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <p class="font-semibold">{{ selectedRental.movieTitle || 'Movie Rental' }}</p>
+                    <p class="text-xs text-muted">7-day CineVault stream license</p>
+                  </td>
+                  <td style="text-align: right;" class="font-semibold">LKR 500.00</td>
+                </tr>
+                <!-- Discount Row (if total fee is less than 500 due to promo code) -->
+                <tr *ngIf="selectedRental.totalFee < 500.0 && selectedRental.totalFee >= 0">
+                  <td>
+                    <p class="font-semibold text-green">Promo Discount</p>
+                    <p class="text-xs text-muted" *ngIf="selectedRental.promoCode">Applied Code: {{ selectedRental.promoCode }}</p>
+                  </td>
+                  <td style="text-align: right; color:#2ecc71;" class="font-semibold">
+                    -LKR {{ (500.0 - selectedRental.totalFee) | number:'1.2-2' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="divider-dashed"></div>
+
+          <div class="invoice-summary">
+            <div class="summary-line">
+              <span class="text-muted">Payment Method:</span>
+              <span class="font-semibold">{{ selectedRental.paymentMethod || 'Credit Card' }}</span>
+            </div>
+            <div class="summary-line total-line">
+              <span class="total-lbl">Total Paid:</span>
+              <span class="total-val">LKR {{ selectedRental.totalFee | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="invoice-footer">
+            <p class="thank-you">Thank you for your rental!</p>
+            <p class="support-text">For questions, contact support&#64;cinevault.com</p>
+            <button class="btn btn-primary w-full" style="margin-top:1.5rem;" (click)="closeInvoice()">Close Receipt</button>
+          </div>
+        </div>
+      </div>
     </div>
-  `
+  `,
+  styles: [`
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s ease-out;
+    }
+    .invoice-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 480px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+      animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+    }
+    .brand-vault {
+      color: #eae5d0;
+    }
+    .brand-title {
+      color: var(--accent);
+    }
+    .invoice-tag h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin: 0;
+    }
+    .invoice-num {
+      font-size: 0.8rem;
+      font-family: monospace;
+      color: var(--text-muted);
+      margin: 0.2rem 0 0 0;
+    }
+    .divider-dashed {
+      border-top: 1px dashed var(--border);
+      margin: 1.5rem 0;
+    }
+    .invoice-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+    }
+    .meta-lbl {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+    .meta-val {
+      color: var(--text);
+      margin: 0;
+    }
+    .meta-email {
+      margin: 0.1rem 0 0 0;
+    }
+    .invoice-table-wrap {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .invoice-bill-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .invoice-bill-table th {
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .invoice-bill-table td {
+      padding: 0.75rem 0 0 0;
+      vertical-align: top;
+    }
+    .invoice-bill-table td p {
+      margin: 0;
+    }
+    .text-green {
+      color: #2ecc71;
+    }
+    .invoice-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+    }
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+    }
+    .total-line {
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+      margin-top: 0.25rem;
+    }
+    .total-lbl {
+      font-weight: 700;
+      color: var(--text);
+    }
+    .total-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .invoice-footer {
+      text-align: center;
+      font-size: 0.825rem;
+    }
+    .thank-you {
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 0.25rem 0;
+    }
+    .support-text {
+      color: var(--text-muted);
+      margin: 0;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  `]
 })
 export class MyRentalsComponent implements OnInit {
   rentals: Rental[] = [];
   loading = true;
+  selectedRental: Rental | null = null;
 
   constructor(private rentalService: RentalService, private userService: UserService) {}
 
@@ -58,4 +302,13 @@ export class MyRentalsComponent implements OnInit {
       error: () => { this.loading = false; }
     });
   }
+
+  openInvoice(rental: Rental) {
+    this.selectedRental = rental;
+  }
+
+  closeInvoice() {
+    this.selectedRental = null;
+  }
 }
+
