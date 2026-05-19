@@ -1,4 +1,4 @@
-// IT25101901 – Thanuluxshan K. – Component 05: Admin Management (SOA REST)
+// IT25101540 – Gunathilaka H.D.T.T. – Component 05: Admin Management (SOA REST)
 package com.movieplatform.controller;
 
 import com.movieplatform.dto.AdminDTO;

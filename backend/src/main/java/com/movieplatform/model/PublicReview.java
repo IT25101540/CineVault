@@ -1,4 +1,4 @@
-// IT25101540 – Gunathilaka H.D.T.T. – Component 03: Review & Rating Management
+// IT25101901 – Thanuluxshan K. – Component 03: Review & Rating Management
 package com.movieplatform.model;
 
 import org.springframework.data.mongodb.core.mapping.Document;
