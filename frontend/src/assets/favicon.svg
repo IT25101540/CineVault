@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141414" />
+      <stop offset="100%" stop-color="#0a0a0a" />
+    </linearGradient>
+    
+    <!-- Gold / Amber Accent Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d4af37" />
+      <stop offset="50%" stop-color="#f9d976" />
+      <stop offset="100%" stop-color="#e29b12" />
+    </linearGradient>
+
+    <!-- Subtle Glow Shadow -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Circular Dark Background -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGrad)" stroke="url(#goldGrad)" stroke-width="8" />
+
+  <!-- Stylized Vault & Film Reel Play Button Emblem -->
+  <g filter="url(#glow)">
+    <!-- Vault Outer Gear Ring (8 teeth) -->
+    <path d="M 256,70 C 266,70 274,80 274,90 L 274,110 C 310,115 340,132 362,158 L 376,144 C 383,137 395,137 402,144 C 409,151 409,163 402,170 L 388,184 C 414,206 431,236 436,272 L 456,272 C 466,272 476,280 476,290 C 476,300 466,308 456,308 L 436,308 C 431,344 414,374 388,396 L 402,410 C 409,417 409,429 402,436 C 395,443 383,443 376,436 L 376,436 C 369,429 357,429 350,436 L 336,450 C 314,424 284,407 248,402 L 248,382 C 248,372 240,362 230,362 C 220,362 212,372 212,382 L 212,402 C 176,407 146,424 124,450 L 110,436 C 103,429 91,429 84,436 C 77,443 77,455 84,462 L 98,476 C 72,498 55,528 50,564 L 30,564 C 20,564 10,572 10,582 C 10,592 20,600 30,600 L 50,600 C 55,636 72,666 98,688 L 84,702 C 77,709 77,721 84,728 C 91,735 103,735 110,728 L 124,714 C 146,740 176,757 212,762 L 212,782 C 212,792 220,802 230,802 C 240,802 248,792 248,782 Z" fill="none" stroke="url(#goldGrad)" stroke-width="14" stroke-linejoin="round" style="display:none;" />
+    
+    <!-- Vault stylized vault door handles/wheel -->
+    <circle cx="256" cy="256" r="120" fill="none" stroke="url(#goldGrad)" stroke-width="14" />
+    <line x1="256" y1="100" x2="256" y2="412" stroke="url(#goldGrad)" stroke-width="14" />
+    <line x1="100" y1="256" x2="412" y2="256" stroke="url(#goldGrad)" stroke-width="14" />
+    <line x1="146" y1="146" x2="366" y2="366" stroke="url(#goldGrad)" stroke-width="14" />
+    <line x1="146" y1="366" x2="366" y2="146" stroke="url(#goldGrad)" stroke-width="14" />
+
+    <!-- Center Ring & Play Triangle -->
+    <circle cx="256" cy="256" r="70" fill="#0d0d0d" stroke="url(#goldGrad)" stroke-width="10" />
+    <polygon points="236,216 296,256 236,296" fill="url(#goldGrad)" />
+  </g>
+</svg>
