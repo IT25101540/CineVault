@@ -30,7 +30,7 @@ import { Rental } from '../../core/models/models';
                 <span class="badge badge-gray"   *ngIf="r.status === 'RETURNED'">Returned</span>
                 <span class="badge badge-red"    *ngIf="r.status === 'OVERDUE'">Overdue</span>
               </td>
-              <td class="text-sm">{{ r.totalFee > 0 ? ('$' + (r.totalFee | number:'1.2-2')) : '—' }}</td>
+              <td class="text-sm">{{ r.totalFee > 0 ? ('LKR ' + (r.totalFee | number:'1.2-2')) : '—' }}</td>
               <td>
                 <a *ngIf="r.status === 'ACTIVE'" [routerLink]="['/rentals/return', r.id]" class="btn btn-outline btn-sm">Return</a>
               </td>

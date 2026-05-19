@@ -7,6 +7,8 @@ import com.movieplatform.repository.RentalRepository;
 import com.movieplatform.repository.UserRepository;
 import com.movieplatform.repository.MovieRepository;
 import com.movieplatform.service.RentalService;
+import com.movieplatform.service.PaymentService;
+import com.movieplatform.service.EmailNotificationService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,20 +20,51 @@ public class RentalServiceImpl implements RentalService {
     private final RentalRepository rentalRepository;
     private final UserRepository userRepository;
     private final MovieRepository movieRepository;
+    private final PaymentService paymentService;
+    private final EmailNotificationService emailService;
+    private final com.movieplatform.repository.PromoCodeRepository promoRepo;
 
-    public RentalServiceImpl(RentalRepository rentalRepository, UserRepository userRepository, MovieRepository movieRepository) {
+    public RentalServiceImpl(RentalRepository rentalRepository, UserRepository userRepository, MovieRepository movieRepository,
+                             PaymentService paymentService, EmailNotificationService emailService,
+                             com.movieplatform.repository.PromoCodeRepository promoRepo) {
         this.rentalRepository = rentalRepository;
         this.userRepository = userRepository;
         this.movieRepository = movieRepository;
+        this.paymentService = paymentService;
+        this.emailService = emailService;
+        this.promoRepo = promoRepo;
     }
 
     @Override
-    public RentalDTO rentMovie(String userId, String movieId) {
+    public RentalDTO rentMovie(String userId, String movieId, String promoCode, String paymentMethod) {
         LocalDate today = LocalDate.now();
         LocalDate due = today.plusDays(7);
+        
+        double baseFee = 500.0; // Base rental fee (LKR)
+        double discount = 0.0;
+        
+        if (promoCode != null && !promoCode.isBlank()) {
+            java.util.Optional<com.movieplatform.model.PromoCode> promoOpt = promoRepo.findByCode(promoCode);
+            if (promoOpt.isPresent() && promoOpt.get().isActive()) {
+                discount = promoOpt.get().getDiscountPercentage();
+            }
+        }
+        
+        double finalFee = baseFee - (baseFee * discount / 100);
+        
+        // Process payment
+        paymentService.processPayment(userId, finalFee, paymentMethod);
+
         RentalTransaction r = new RentalTransaction(null,
                 userId, movieId, today, due);
+        r.setTotalFee(finalFee);
         rentalRepository.save(r);
+        
+        // Send email receipt
+        userRepository.findById(userId).ifPresent(u -> {
+            emailService.sendInvoice(u.getEmail(), r.getId(), finalFee);
+        });
+
         return toDTO(r);
     }
 

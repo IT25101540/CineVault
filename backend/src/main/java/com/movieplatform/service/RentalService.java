@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface RentalService {
-    RentalDTO rentMovie(String userId, String movieId);
+    RentalDTO rentMovie(String userId, String movieId, String promoCode, String paymentMethod);
     List<RentalDTO> findByUser(String userId);
     List<RentalDTO> findAll();
     Optional<RentalDTO> findById(String id);

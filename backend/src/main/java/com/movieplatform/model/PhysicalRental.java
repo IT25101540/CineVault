@@ -26,7 +26,7 @@ public class PhysicalRental extends RentalTransaction {
     public double calculateLateFee() {
         if (getReturnedDate() == null || !getReturnedDate().isAfter(getDueDate())) return 0.0;
         long days = (long) java.time.temporal.ChronoUnit.DAYS.between(getDueDate(), getReturnedDate());
-        return days * 1.50;
+        return days * 150.0;
     }
 
     public String getDeliveryAddress() { return deliveryAddress; }

@@ -41,7 +41,7 @@ public class RentalTransaction {
     public double calculateLateFee() {
         if (returnedDate == null || !returnedDate.isAfter(dueDate)) return 0.0;
         long daysOverdue = (long) java.time.temporal.ChronoUnit.DAYS.between(dueDate, returnedDate);
-        return daysOverdue * 1.5;  // base: $1.50/day
+        return daysOverdue * 150.0;  // base: LKR 150.00/day
     }
 
     public void markReturned(LocalDate returnDate) {

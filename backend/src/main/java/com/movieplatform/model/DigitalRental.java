@@ -26,7 +26,7 @@ public class DigitalRental extends RentalTransaction {
     public double calculateLateFee() {
         if (getReturnedDate() == null || !getReturnedDate().isAfter(getDueDate())) return 0.0;
         long hours = (long) java.time.temporal.ChronoUnit.DAYS.between(getDueDate(), getReturnedDate()) * 24L;
-        return hours * 0.50;
+        return hours * 50.0;
     }
 
     public String getStreamToken() { return streamToken; }

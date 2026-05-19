@@ -48,7 +48,9 @@ public class RentalRestController {
     /** POST /api/rentals – Create a new rental */
     @PostMapping
     public ResponseEntity<RentalDTO> rent(@RequestBody Map<String, String> body) {
-        RentalDTO dto = rentalService.rentMovie(body.get("userId"), body.get("movieId"));
+        String promoCode = body.getOrDefault("promoCode", "");
+        String paymentMethod = body.getOrDefault("paymentMethod", "Credit Card");
+        RentalDTO dto = rentalService.rentMovie(body.get("userId"), body.get("movieId"), promoCode, paymentMethod);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 

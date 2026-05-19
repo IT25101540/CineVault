@@ -12,8 +12,8 @@ export class RentalService {
   getAll(): Observable<Rental[]> { return this.http.get<Rental[]>(this.url); }
   getByUser(userId: string): Observable<Rental[]> { return this.http.get<Rental[]>(`${this.url}/user/${userId}`); }
   getById(id: string): Observable<Rental> { return this.http.get<Rental>(`${this.url}/${id}`); }
-  rent(userId: string, movieId: string): Observable<Rental> {
-    return this.http.post<Rental>(this.url, { userId, movieId });
+  rent(userId: string, movieId: string, promoCode: string = '', paymentMethod: string = 'Credit Card'): Observable<Rental> {
+    return this.http.post<Rental>(this.url, { userId, movieId, promoCode, paymentMethod });
   }
   returnMovie(id: string): Observable<Rental> { return this.http.put<Rental>(`${this.url}/${id}/return`, {}); }
   update(id: string, data: Partial<Rental>): Observable<Rental> { return this.http.put<Rental>(`${this.url}/${id}`, data); }

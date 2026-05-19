@@ -66,7 +66,7 @@ import { Router } from '@angular/router';
                 <span class="badge badge-gray"   *ngIf="r.status==='RETURNED'">Returned</span>
                 <span class="badge badge-red"    *ngIf="r.status==='OVERDUE'">Overdue</span>
               </td>
-              <td class="text-sm">{{ r.totalFee > 0 ? ('$' + (r.totalFee | number:'1.2-2')) : '—' }}</td>
+              <td class="text-sm">{{ r.totalFee > 0 ? ('LKR ' + (r.totalFee | number:'1.2-2')) : '—' }}</td>
               <td style="display:flex; gap:0.4rem; flex-wrap:wrap;">
                 <button class="btn btn-primary btn-sm" (click)="openEditModal(r)">Edit</button>
                 <button class="btn btn-outline btn-sm" *ngIf="r.status==='ACTIVE' || r.status==='OVERDUE'" (click)="returnMovie(r.id)">Return</button>
@@ -138,7 +138,7 @@ import { Router } from '@angular/router';
                 <input type="date" [(ngModel)]="editReturnedDate" name="returnedDate" class="form-control" />
               </div>
               <div class="form-group">
-                <label>Total Fee ($)</label>
+                <label>Total Fee (LKR)</label>
                 <input type="number" step="0.01" min="0" [(ngModel)]="editTotalFee" name="totalFee" class="form-control" />
               </div>
             </div>

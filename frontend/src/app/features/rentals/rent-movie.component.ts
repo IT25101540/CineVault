@@ -58,7 +58,7 @@ import { Movie } from '../../core/models/models';
           <p class="eyebrow">Rental</p>
           <h2>Confirm rental</h2>
           <p class="text-muted text-sm" style="margin-top:.5rem;">
-            7-day rental period · Late fee: $1.50/day
+            7-day rental period · Late fee: LKR 150/day
           </p>
         </div>
 
