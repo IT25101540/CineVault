@@ -193,8 +193,8 @@ export class AdminRentalsComponent implements OnInit {
     event.preventDefault();
     if (!this.selectedRentalForEdit) return;
 
-    const data = {
-      status: this.editStatus,
+    const data: Partial<Rental> = {
+      status: this.editStatus as "ACTIVE" | "RETURNED" | "OVERDUE",
       rentalDate: this.editRentalDate,
       dueDate: this.editDueDate,
       returnedDate: this.editReturnedDate || null,
