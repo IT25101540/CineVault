@@ -88,10 +88,17 @@ public class UserRestController {
         return ResponseEntity.ok(updated);
     }
 
-    /** DELETE /api/users/{id} – Soft-delete (deactivate) a user */
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> delete(@PathVariable String id) {
         userService.deactivate(id);
         return ResponseEntity.ok(Map.of("message", "User deactivated successfully"));
+    }
+
+    /** POST /api/users/{id}/suspend – Suspend a user with a reason */
+    @PostMapping("/{id}/suspend")
+    public ResponseEntity<UserDTO> suspend(@PathVariable String id, @RequestBody Map<String, String> body) {
+        String reason = body.getOrDefault("reason", "Violation of terms");
+        UserDTO updated = userService.suspend(id, reason);
+        return ResponseEntity.ok(updated);
     }
 }

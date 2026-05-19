@@ -54,7 +54,7 @@ import { Router } from '@angular/router';
               <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
                 <button class="btn btn-outline btn-sm" (click)="viewProfile(u)">View Profile</button>
                 <button class="btn btn-ghost btn-sm" (click)="openEditModal(u)">Edit</button>
-                <button class="btn btn-danger btn-sm" (click)="toggleActive(u)" *ngIf="u.active">Deactivate</button>
+                <button class="btn btn-danger btn-sm" (click)="openSuspendModal(u)" *ngIf="u.active">Suspend</button>
                 <button class="btn btn-primary btn-sm" (click)="toggleActive(u)" *ngIf="!u.active">Activate</button>
               </td>
             </tr>
@@ -137,6 +137,26 @@ import { Router } from '@angular/router';
           </form>
         </div>
       </div>
+      <!-- Suspend User Modal -->
+      <div class="modal-backdrop" *ngIf="selectedUserForSuspend" (click)="selectedUserForSuspend = null">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Suspend User</h2>
+            <button class="btn-close" (click)="selectedUserForSuspend = null">×</button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to suspend <strong>{{ selectedUserForSuspend.username }}</strong>?</p>
+            <div class="form-group">
+              <label>Reason for suspension</label>
+              <textarea [(ngModel)]="suspendReason" class="form-control" rows="3" placeholder="e.g. Violation of terms"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="selectedUserForSuspend = null">Cancel</button>
+            <button class="btn btn-danger" (click)="suspendUser()">Suspend</button>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -173,6 +193,8 @@ export class AdminUsersComponent implements OnInit {
   // Modal controls
   selectedUserForView: User | null = null;
   selectedUserForEdit: User | null = null;
+  selectedUserForSuspend: User | null = null;
+  suspendReason: string = '';
 
   // Form binds
   editUsername = '';
@@ -248,10 +270,34 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
+  openSuspendModal(user: User) {
+    this.selectedUserForSuspend = user;
+    this.suspendReason = '';
+  }
+
+  suspendUser() {
+    if (!this.selectedUserForSuspend) return;
+    const user = this.selectedUserForSuspend;
+    this.userService.suspend(user.id, this.suspendReason || 'Violation of terms').subscribe({
+      next: () => {
+        const updated = { ...user, active: false };
+        this.users = this.users.map(u => u.id === user.id ? updated : u);
+        if (this.selectedUserForView && this.selectedUserForView.id === user.id) {
+          this.selectedUserForView = updated;
+        }
+        this.selectedUserForSuspend = null;
+      },
+      error: (err) => {
+        console.error(`Failed to suspend user`, err);
+        alert(`Failed to suspend user.`);
+      }
+    });
+  }
+
   toggleActive(user: User) {
-    const action = user.active ? 'Deactivate' : 'Activate';
+    const action = 'Activate';
     if (confirm(`${action} this user?`)) {
-      this.userService.update(user.id, { active: !user.active }).subscribe({
+      this.userService.update(user.id, { active: true }).subscribe({
         next: (updated) => {
           this.users = this.users.map(u => u.id === user.id ? updated : u);
           if (this.selectedUserForView && this.selectedUserForView.id === user.id) {

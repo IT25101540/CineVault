@@ -88,6 +88,17 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
+    public UserDTO suspend(String id, String reason) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found: " + id));
+        user.setActive(false);
+        // Note: Currently User model doesn't have a suspendReason field.
+        // We simulate suspension by deactivating them.
+        userRepository.save(user);
+        return toDTO(user);
+    }
+
     private String hashPassword(String raw) {
         // Simple hash for demo; use BCrypt in production
         return Integer.toHexString(raw.hashCode());

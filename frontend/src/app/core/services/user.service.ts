@@ -41,4 +41,7 @@ export class UserService {
     return this.http.put<User>(`${this.url}/${id}`, data);
   }
   delete(id: string): Observable<any> { return this.http.delete(`${this.url}/${id}`); }
+  suspend(id: string, reason: string): Observable<User> {
+    return this.http.post<User>(`${this.url}/${id}/suspend`, { reason });
+  }
 }

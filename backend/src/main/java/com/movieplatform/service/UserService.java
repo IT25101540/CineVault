@@ -17,4 +17,5 @@ public interface UserService {
     List<UserDTO> findAll();
     UserDTO update(String id, String username, String email, String password, String membershipType, Boolean active);
     void deactivate(String id);
+    UserDTO suspend(String id, String reason);
 }
