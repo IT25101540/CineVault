@@ -8,15 +8,22 @@ import com.movieplatform.repository.UserRepository;
 import com.movieplatform.service.UserService;
 import org.springframework.stereotype.Service;
 
+import com.movieplatform.service.PaymentService;
+import com.movieplatform.service.EmailNotificationService;
+
 import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PaymentService paymentService;
+    private final EmailNotificationService emailService;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PaymentService paymentService, EmailNotificationService emailService) {
         this.userRepository = userRepository;
+        this.paymentService = paymentService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -74,7 +81,25 @@ public class UserServiceImpl implements UserService {
         if (username != null && !username.isBlank()) user.setUsername(username);
         if (email != null && !email.isBlank()) user.setEmail(email);
         if (password != null && !password.isBlank()) user.setPasswordHash(hashPassword(password));
-        if (membershipType != null && !membershipType.isBlank()) user.setMembershipType(membershipType);
+        
+        // If membership type is changing (e.g. upgrading)
+        if (membershipType != null && !membershipType.isBlank() && !membershipType.equalsIgnoreCase(user.getMembershipType())) {
+            double price = 0.0;
+            if ("PREMIUM".equalsIgnoreCase(membershipType)) {
+                price = 2500.0;
+            } else if ("ELITE".equalsIgnoreCase(membershipType)) {
+                price = 5800.0;
+            }
+            
+            user.setMembershipType(membershipType.toUpperCase());
+            
+            // Only process payment and send invoice if upgrading to a paid tier
+            if (price > 0.0) {
+                paymentService.processPayment(user.getId(), price, "Membership Billing");
+                emailService.sendInvoice(user.getEmail(), "SUB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(), price);
+            }
+        }
+        
         if (active != null) user.setActive(active);
         userRepository.save(user);
         return toDTO(user);
