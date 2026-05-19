@@ -43,6 +43,17 @@ import { Movie } from '../../core/models/models';
                 <span class="date-val">{{ dueDate | date:'dd MMM yyyy' }}</span>
               </div>
             </div>
+            
+            <div class="ticket-dates" *ngIf="confirmedRental" style="margin-top: 1rem; border-top: 1px dashed var(--border); padding-top: 0.75rem;">
+              <div class="date-col">
+                <span class="date-label">AMOUNT PAID</span>
+                <span class="date-val" style="color:var(--accent); font-weight:700;">LKR {{ confirmedRental.totalFee | number:'1.2-2' }}</span>
+              </div>
+              <div class="date-col">
+                <span class="date-label">PAYMENT METHOD</span>
+                <span class="date-val">{{ confirmedRental.paymentMethod || selectedPaymentMethod }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -58,7 +69,7 @@ import { Movie } from '../../core/models/models';
           <p class="eyebrow">Rental</p>
           <h2>Confirm rental</h2>
           <p class="text-muted text-sm" style="margin-top:.5rem;">
-            7-day rental period · Late fee: LKR 150/day
+            7-day rental period · Base rental: LKR 500.00
           </p>
         </div>
 
@@ -70,9 +81,24 @@ import { Movie } from '../../core/models/models';
 
         <div class="alert alert-error" *ngIf="error">{{ error }}</div>
 
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 1.25rem;">
           <label class="form-label">User ID</label>
           <input type="text" class="form-control" [(ngModel)]="userId" placeholder="Your user ID"/>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label class="form-label">Promo Code (Optional)</label>
+          <input type="text" class="form-control" [(ngModel)]="promoCode" placeholder="Enter promo code (e.g. SAVE20)"/>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label">Payment Method</label>
+          <select class="form-control" [(ngModel)]="selectedPaymentMethod">
+            <option value="Credit Card">Credit Card</option>
+            <option value="Debit Card">Debit Card</option>
+            <option value="PayPal">PayPal</option>
+            <option value="Mobile Wallet">Mobile Wallet</option>
+          </select>
         </div>
 
         <div style="display:flex;gap:.75rem;">
@@ -192,6 +218,11 @@ export class RentMovieComponent implements OnInit {
   saving = false;
   error = '';
 
+  // New states
+  promoCode = '';
+  selectedPaymentMethod = 'Credit Card';
+  confirmedRental: any = null;
+
   showSuccess = false;
   todayDate = new Date();
   dueDate = new Date();
@@ -214,8 +245,9 @@ export class RentMovieComponent implements OnInit {
   confirmRent() {
     if (!this.userId.trim()) { this.error = 'User ID is required.'; return; }
     this.saving = true; this.error = '';
-    this.rentalService.rent(this.userId, this.movieId).subscribe({
-      next: () => {
+    this.rentalService.rent(this.userId, this.movieId, this.promoCode, this.selectedPaymentMethod).subscribe({
+      next: (rental) => {
+        this.confirmedRental = rental;
         this.saving = false;
         this.showSuccess = true;
       },
