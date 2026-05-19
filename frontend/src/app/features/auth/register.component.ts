@@ -63,14 +63,6 @@ import { UserService } from '../../core/services/user.service';
           </div>
         </div>
 
-        <!-- Membership -->
-        <div class="form-group">
-          <label class="form-label">Membership</label>
-          <select class="form-control" [(ngModel)]="membershipType">
-            <option value="FREE">Free</option>
-            <option value="PREMIUM">Premium</option>
-          </select>
-        </div>
 
         <button class="btn btn-primary w-full" style="margin-top:.5rem;" (click)="register()" [disabled]="loading || !isFormValid()">
           {{ loading ? 'Creating…' : 'Create account' }}
