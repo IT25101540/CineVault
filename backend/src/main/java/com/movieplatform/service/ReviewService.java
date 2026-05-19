@@ -15,4 +15,7 @@ public interface ReviewService {
     void delete(String id);
     void hide(String id);
     void unhide(String id);
+    List<ReviewDTO> getPendingReviews();
+    ReviewDTO approveReview(String id);
+    ReviewDTO rejectReview(String id);
 }

@@ -15,6 +15,7 @@ public class ReviewDTO {
     private LocalDateTime createdAt;
     private boolean verified;
     private boolean hidden;
+    private String status;
 
     public ReviewDTO() {}
 
@@ -40,6 +41,8 @@ public class ReviewDTO {
     public void setVerified(boolean verified) { this.verified = verified; }
     public boolean isHidden() { return hidden; }
     public void setHidden(boolean hidden) { this.hidden = hidden; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     @Override public String toString() { return "ReviewDTO{id='" + id + "', movieId='" + movieId + "'}"; }
 }

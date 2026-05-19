@@ -99,11 +99,37 @@ public class ReviewServiceImpl implements ReviewService {
         reviewRepository.save(r);
     }
 
+    @Override
+    public List<ReviewDTO> getPendingReviews() {
+        return reviewRepository.findAll().stream()
+                .filter(r -> "PENDING".equals(r.getStatus()))
+                .map(this::toDTO).toList();
+    }
+
+    @Override
+    public ReviewDTO approveReview(String id) {
+        Review r = reviewRepository.findById(id).orElseThrow(() -> new RuntimeException("Review not found"));
+        r.setStatus("APPROVED");
+        r.setHidden(false);
+        reviewRepository.save(r);
+        return toDTO(r);
+    }
+
+    @Override
+    public ReviewDTO rejectReview(String id) {
+        Review r = reviewRepository.findById(id).orElseThrow(() -> new RuntimeException("Review not found"));
+        r.setStatus("REJECTED");
+        r.setHidden(true);
+        reviewRepository.save(r);
+        return toDTO(r);
+    }
+
     private ReviewDTO toDTO(Review r) {
         ReviewDTO dto = new ReviewDTO();
         dto.setId(r.getId()); dto.setMovieId(r.getMovieId()); dto.setUserId(r.getUserId());
         dto.setStarRating(r.getStarRating()); dto.setCommentText(r.getCommentText());
         dto.setCreatedAt(r.getCreatedAt()); dto.setVerified(r.isVerified()); dto.setHidden(r.isHidden());
+        dto.setStatus(r.getStatus() != null ? r.getStatus() : "PENDING");
 
         // Resolve username and email from userId
         userRepository.findById(r.getUserId()).ifPresent(u -> {

@@ -21,6 +21,7 @@ public class Review {
     private LocalDateTime createdAt;
     private boolean isVerified;
     private boolean isHidden;
+    private String status; // PENDING, APPROVED, REJECTED
 
     public Review() {}
 
@@ -33,6 +34,7 @@ public class Review {
         this.createdAt = LocalDateTime.now();
         this.isVerified = false;
         this.isHidden = false;
+        this.status = "PENDING";
     }
 
     /** Polymorphism hook */
@@ -61,6 +63,8 @@ public class Review {
     public void setVerified(boolean verified) { isVerified = verified; }
     public boolean isHidden() { return isHidden; }
     public void setHidden(boolean hidden) { isHidden = hidden; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     @Override public String toString() {
         return "Review{id='" + id + "', movieId='" + movieId + "', stars=" + starRating + "}";

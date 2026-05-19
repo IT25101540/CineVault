@@ -86,10 +86,27 @@ public class ReviewRestController {
         return ResponseEntity.ok(Map.of("message", "Review hidden successfully"));
     }
 
-    /** POST /api/reviews/{id}/unhide – Unhide review (admin) */
     @PostMapping("/{id}/unhide")
     public ResponseEntity<Map<String, String>> unhide(@PathVariable String id) {
         reviewService.unhide(id);
         return ResponseEntity.ok(Map.of("message", "Review unhidden successfully"));
+    }
+
+    /** GET /api/reviews/pending – Get pending reviews (admin) */
+    @GetMapping("/pending")
+    public ResponseEntity<List<ReviewDTO>> getPendingReviews() {
+        return ResponseEntity.ok(reviewService.getPendingReviews());
+    }
+
+    /** POST /api/reviews/{id}/approve – Approve review (admin) */
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<ReviewDTO> approveReview(@PathVariable String id) {
+        return ResponseEntity.ok(reviewService.approveReview(id));
+    }
+
+    /** POST /api/reviews/{id}/reject – Reject review (admin) */
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<ReviewDTO> rejectReview(@PathVariable String id) {
+        return ResponseEntity.ok(reviewService.rejectReview(id));
     }
 }
