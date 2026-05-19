@@ -44,7 +44,7 @@ public class RentalServiceImpl implements RentalService {
         double discount = 0.0;
         
         if (promoCode != null && !promoCode.isBlank()) {
-            java.util.Optional<com.movieplatform.model.PromoCode> promoOpt = promoRepo.findByCode(promoCode);
+            java.util.Optional<com.movieplatform.model.PromoCode> promoOpt = promoRepo.findByCode(promoCode.trim().toUpperCase());
             if (promoOpt.isPresent() && promoOpt.get().isActive()) {
                 discount = promoOpt.get().getDiscountPercentage();
             }
