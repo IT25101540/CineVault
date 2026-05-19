@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ReviewService } from '../../core/services/review.service';
 import { AdminService } from '../../core/services/admin.service';
 import { Review, Admin } from '../../core/models/models';
@@ -9,7 +10,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-admin-reviews',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
   template: `
     <div class="container">
       <div class="page-header">
@@ -42,9 +43,7 @@ import { Router } from '@angular/router';
               </td>
               <td class="text-sm">
                 <div style="display:flex;flex-direction:column;">
-                  <a [routerLink]="['/profile', r.userId]" class="text-accent" style="text-decoration:none;font-weight:600;">
-                    {{ r.username || r.userId }}
-                  </a>
+                  <span style="font-weight:600;color:var(--text);">{{ r.username || r.userId }}</span>
                   <span class="text-muted" style="font-size:0.75rem;">{{ r.userEmail }}</span>
                 </div>
               </td>
@@ -59,6 +58,7 @@ import { Router } from '@angular/router';
                 <span class="badge badge-gray" *ngIf="!r.hidden">Visible</span>
               </td>
               <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
+                <button class="btn btn-primary btn-sm" (click)="openEditModal(r)">Edit</button>
                 <button *ngIf="!r.hidden" class="btn btn-outline btn-sm" (click)="hide(r.id)">Hide</button>
                 <button *ngIf="r.hidden"  class="btn btn-ghost btn-sm"   (click)="unhide(r.id)">Unhide</button>
                 <button class="btn btn-danger btn-sm" (click)="delete(r.id)">Delete</button>
@@ -68,18 +68,70 @@ import { Router } from '@angular/router';
         </table>
         <p class="text-muted text-sm" style="padding:.75rem 0;">{{ reviews.length }} reviews total</p>
       </div>
+
+      <!-- Edit Review Modal -->
+      <div class="modal-backdrop" *ngIf="selectedReviewForEdit" (click)="closeEditModal()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Edit Review Content</h2>
+            <button class="btn-close" (click)="closeEditModal()">×</button>
+          </div>
+          <form (submit)="saveReviewEdit($event)">
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Star Rating (1 - 5)</label>
+                <select [(ngModel)]="editStarRating" name="starRating" class="form-control">
+                  <option [ngValue]="1">1★</option>
+                  <option [ngValue]="2">2★</option>
+                  <option [ngValue]="3">3★</option>
+                  <option [ngValue]="4">4★</option>
+                  <option [ngValue]="5">5★</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Review Comment</label>
+                <textarea [(ngModel)]="editCommentText" name="commentText" class="form-control" rows="4" required></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline" (click)="closeEditModal()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
     .admin-nav{display:flex;gap:.25rem;flex-wrap:wrap;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
     .admin-nav a{display:flex;align-items:center;gap:.35rem;color:var(--text-muted);font-size:.875rem;font-weight:500;padding:.4rem .75rem;border-radius:var(--radius);text-decoration:none;transition:all .18s;}
     .admin-nav a:hover,.admin-nav a.active{color:var(--text);background:var(--surface-2);}
+
+    /* Modal styles with beautiful Glassmorphism */
+    .modal-backdrop{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:1000;}
+    .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:480px;box-shadow:0 24px 64px rgba(0,0,0,0.6);animation:fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);overflow:hidden;}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);}
+    .modal-header h2{font-size:1.2rem;font-weight:600;margin:0;}
+    .btn-close{background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;padding:0;line-height:1;}
+    .btn-close:hover{color:var(--text);}
+    .modal-body{padding:1.5rem;display:flex;flex-direction:column;gap:1.1rem;}
+    .modal-footer{display:flex;justify-content:flex-end;gap:.5rem;padding:1.1rem 1.5rem;background:var(--surface-2);border-top:1px solid var(--border);}
+    .form-group{display:flex;flex-direction:column;gap:.35rem;}
+    .form-group label{font-size:.825rem;color:var(--text-muted);font-weight:500;}
+    .form-control{background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:.6rem .75rem;border-radius:var(--radius);font-size:.9rem;outline:none;transition:border-color 0.15s;}
+    .form-control:focus{border-color:var(--accent);}
+    @keyframes fadeIn { from{opacity:0;transform:scale(0.96);} to{opacity:1;transform:scale(1);} }
   `]
 })
 export class AdminReviewsComponent implements OnInit {
   reviews: Review[] = [];
   loading = true;
   currentAdmin: Admin | null = null;
+
+  // Modal Controls
+  selectedReviewForEdit: Review | null = null;
+  editStarRating = 5;
+  editCommentText = '';
 
   constructor(private reviewService: ReviewService, private adminService: AdminService, private router: Router) {}
 
@@ -89,12 +141,46 @@ export class AdminReviewsComponent implements OnInit {
       this.router.navigate(['/admin/dashboard']);
       return;
     }
-    this.reviewService.getAll().subscribe({ next: r => { this.reviews = r; this.loading = false; }, error: () => { this.loading = false; } });
+    this.loadReviews();
+  }
+
+  loadReviews() {
+    this.reviewService.getAll().subscribe({
+      next: r => { this.reviews = r; this.loading = false; },
+      error: () => { this.loading = false; }
+    });
   }
 
   hasRole(roles: string[]): boolean {
     return this.currentAdmin ? roles.includes(this.currentAdmin.role) : false;
   }
+
+  openEditModal(review: Review) {
+    this.selectedReviewForEdit = review;
+    this.editStarRating = review.starRating;
+    this.editCommentText = review.commentText;
+  }
+
+  closeEditModal() {
+    this.selectedReviewForEdit = null;
+  }
+
+  saveReviewEdit(event: Event) {
+    event.preventDefault();
+    if (!this.selectedReviewForEdit) return;
+
+    this.reviewService.update(this.selectedReviewForEdit.id, this.editStarRating, this.editCommentText).subscribe({
+      next: (updatedReview) => {
+        this.reviews = this.reviews.map(r => r.id === updatedReview.id ? { ...r, starRating: updatedReview.starRating, commentText: updatedReview.commentText } : r);
+        this.closeEditModal();
+      },
+      error: (err) => {
+        console.error("Failed to update review", err);
+        alert("Failed to update review.");
+      }
+    });
+  }
+
   hide(id: string) {
     this.reviewService.hide(id).subscribe(() => {
       this.reviews = this.reviews.map(r => r.id === id ? { ...r, hidden: true } : r);
