@@ -40,7 +40,17 @@ public class RentalServiceImpl implements RentalService {
         LocalDate today = LocalDate.now();
         LocalDate due = today.plusDays(7);
         
-        double baseFee = 500.0; // Base rental fee (LKR)
+        // Check user membership: Premium or Elite get LKR 0 rentals. Free users pay LKR 500.
+        boolean isPremiumOrElite = false;
+        java.util.Optional<com.movieplatform.model.User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            String mType = userOpt.get().getMembershipType();
+            if (mType != null && ("PREMIUM".equalsIgnoreCase(mType) || "ELITE".equalsIgnoreCase(mType))) {
+                isPremiumOrElite = true;
+            }
+        }
+        
+        double baseFee = isPremiumOrElite ? 0.0 : 500.0;
         double discount = 0.0;
         
         if (promoCode != null && !promoCode.isBlank()) {
@@ -58,10 +68,14 @@ public class RentalServiceImpl implements RentalService {
         RentalTransaction r = new RentalTransaction(null,
                 userId, movieId, today, due);
         r.setTotalFee(finalFee);
+        r.setPaymentMethod(paymentMethod);
+        if (promoCode != null && !promoCode.isBlank()) {
+            r.setPromoCode(promoCode.trim().toUpperCase());
+        }
         rentalRepository.save(r);
         
         // Send email receipt
-        userRepository.findById(userId).ifPresent(u -> {
+        userOpt.ifPresent(u -> {
             emailService.sendInvoice(u.getEmail(), r.getId(), finalFee);
         });
 
@@ -130,6 +144,8 @@ public class RentalServiceImpl implements RentalService {
         dto.setRentalDate(r.getRentalDate()); dto.setDueDate(r.getDueDate());
         dto.setReturnedDate(r.getReturnedDate()); dto.setStatus(r.getStatus());
         dto.setTotalFee(r.getTotalFee());
+        dto.setPaymentMethod(r.getPaymentMethod());
+        dto.setPromoCode(r.getPromoCode());
         if (r.getDueDate() != null && r.getDueDate().isBefore(LocalDate.now()) &&
                 r.getReturnedDate() == null) {
             dto.setDaysOverdue((int) java.time.temporal.ChronoUnit.DAYS.between(r.getDueDate(), LocalDate.now()));

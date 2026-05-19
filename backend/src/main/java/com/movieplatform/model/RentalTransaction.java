@@ -23,6 +23,8 @@ public class RentalTransaction {
     private LocalDate returnedDate;
     private String status;      // ACTIVE | RETURNED | OVERDUE
     private double totalFee;   // computed internally – not set from outside
+    private String paymentMethod;
+    private String promoCode;
 
     public RentalTransaction() {}
 
@@ -66,6 +68,10 @@ public class RentalTransaction {
     public void setStatus(String status) { this.status = status; }
     public double getTotalFee() { return totalFee; }
     public void setTotalFee(double totalFee) { this.totalFee = totalFee; } // Admin manual override
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    public String getPromoCode() { return promoCode; }
+    public void setPromoCode(String promoCode) { this.promoCode = promoCode; }
 
     @Override public String toString() {
         return "RentalTransaction{id='" + id + "', userId='" + userId +

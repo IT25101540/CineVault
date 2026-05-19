@@ -68,8 +68,11 @@ import { Movie } from '../../core/models/models';
         <div style="margin-bottom:2rem;">
           <p class="eyebrow">Rental</p>
           <h2>Confirm rental</h2>
-          <p class="text-muted text-sm" style="margin-top:.5rem;">
-            7-day rental period · Base rental: LKR 500.00
+          <p class="text-muted text-sm" style="margin-top:.5rem;" *ngIf="isPremiumOrElite">
+            7-day rental period · Price: <strong style="color: #2ecc71;">FREE</strong> <span class="text-xs" style="color:var(--accent); font-weight:600;">(Included in {{ currentUserMembership }} Membership)</span>
+          </p>
+          <p class="text-muted text-sm" style="margin-top:.5rem;" *ngIf="!isPremiumOrElite">
+            7-day rental period · Price: <strong>LKR 500.00</strong>
           </p>
         </div>
 
@@ -257,5 +260,14 @@ export class RentMovieComponent implements OnInit {
 
   goToMyRentals() {
     this.router.navigate(['/rentals/my']);
+  }
+
+  get isPremiumOrElite(): boolean {
+    const mem = this.userService.currentUser?.membershipType;
+    return mem === 'PREMIUM' || mem === 'ELITE';
+  }
+
+  get currentUserMembership(): string {
+    return this.userService.currentUser?.membershipType || 'FREE';
   }
 }

@@ -16,6 +16,8 @@ public class RentalDTO {
     private String username;
     private String userEmail;
     private String movieTitle;
+    private String paymentMethod;
+    private String promoCode;
 
     public RentalDTO() {}
 
@@ -44,6 +46,10 @@ public class RentalDTO {
     public void setUserEmail(String userEmail) { this.userEmail = userEmail; }
     public String getMovieTitle() { return movieTitle; }
     public void setMovieTitle(String movieTitle) { this.movieTitle = movieTitle; }
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    public String getPromoCode() { return promoCode; }
+    public void setPromoCode(String promoCode) { this.promoCode = promoCode; }
 
     @Override public String toString() { return "RentalDTO{id='" + id + "', status='" + status + "'}"; }
 }
