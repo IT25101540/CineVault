@@ -26,6 +26,10 @@ export class AdminService {
   }
   logout(): void { localStorage.removeItem('currentAdmin'); this.currentAdminSubject.next(null); }
   getDashboard(): Observable<DashboardStats> { return this.http.get<DashboardStats>(`${this.url}/dashboard`); }
+  getRevenueStats(): Observable<any> { return this.http.get<any>(`${this.url}/revenue`); }
+  generatePromoCode(code: string, discountPercentage: number): Observable<any> {
+    return this.http.post<any>(`${this.url}/promocodes`, { code, discountPercentage });
+  }
   getAll(): Observable<Admin[]> { return this.http.get<Admin[]>(this.url); }
   getById(id: string): Observable<Admin> { return this.http.get<Admin>(`${this.url}/${id}`); }
   register(data: any): Observable<Admin> { return this.http.post<Admin>(`${this.url}/register`, data); }
