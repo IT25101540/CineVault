@@ -21,9 +21,15 @@ import java.util.Map;
 public class AdminRestController {
 
     private final AdminService adminService;
+    private final com.movieplatform.service.RevenueService revenueService;
+    private final com.movieplatform.repository.PromoCodeRepository promoCodeRepository;
 
-    public AdminRestController(AdminService adminService) {
+    public AdminRestController(AdminService adminService,
+                               com.movieplatform.service.RevenueService revenueService,
+                               com.movieplatform.repository.PromoCodeRepository promoCodeRepository) {
         this.adminService = adminService;
+        this.revenueService = revenueService;
+        this.promoCodeRepository = promoCodeRepository;
     }
 
     /** POST /api/admin/login – Admin authentication */
@@ -99,19 +105,16 @@ public class AdminRestController {
 
     /** GET /api/admin/revenue – Get revenue stats */
     @GetMapping("/revenue")
-    public ResponseEntity<Map<String, Double>> getRevenueStats(@org.springframework.beans.factory.annotation.Autowired com.movieplatform.service.RevenueService revenueService) {
+    public ResponseEntity<Map<String, Double>> getRevenueStats() {
         return ResponseEntity.ok(revenueService.getRevenueStats());
     }
 
     /** POST /api/admin/promocodes – Generate a promo code */
     @PostMapping("/promocodes")
-    public ResponseEntity<com.movieplatform.model.PromoCode> generatePromoCode(
-            @RequestBody Map<String, Object> body,
-            @org.springframework.beans.factory.annotation.Autowired com.movieplatform.repository.PromoCodeRepository promoRepo) {
-        
+    public ResponseEntity<com.movieplatform.model.PromoCode> generatePromoCode(@RequestBody Map<String, Object> body) {
         String code = (String) body.get("code");
         double discount = Double.parseDouble(body.get("discountPercentage").toString());
         com.movieplatform.model.PromoCode promo = new com.movieplatform.model.PromoCode(null, code, discount, true);
-        return ResponseEntity.ok(promoRepo.save(promo));
+        return ResponseEntity.ok(promoCodeRepository.save(promo));
     }
 }
