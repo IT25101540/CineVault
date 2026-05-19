@@ -332,6 +332,26 @@ import { UserService } from '../../core/services/user.service';
     .modal-box h3 { font-size: 1.5rem; color: #eae5d0; margin-bottom: 0.75rem; }
     .modal-box p { color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6; }
     .modal-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* Mobile Optimizations */
+    @media (max-width: 768px) {
+      .membership-container { padding: 2.5rem 1rem; }
+      h1 { font-size: 2.2rem; }
+      .subtitle { font-size: 1rem; }
+      .packages-grid { grid-template-columns: 1fr; gap: 1.5rem; padding: 0 0.5rem; }
+      .package-card { padding: 1.8rem; border-radius: 20px; }
+      .package-card.popular { transform: scale(1.01); margin: 0.5rem 0; }
+      .checkout-card { padding: 1.5rem; border-radius: 20px; }
+      .grid-form { grid-template-columns: 1fr; gap: 1.2rem; }
+      .full-width { grid-column: span 1; }
+      .back-btn { position: relative; left: 0; top: 0; transform: none; margin-bottom: 1.5rem; display: inline-flex; width: auto; }
+      .vip-card { width: 100%; max-width: 320px; height: 180px; padding: 15px; margin: 0 auto; }
+      .vip-chip { width: 40px; height: 30px; }
+      .vip-level { font-size: 1.3rem; }
+      .cancel-banner { padding: 1.2rem; text-align: center; }
+      .cancel-banner-inner { justify-content: center; text-align: center; }
+      .cancel-banner-inner button { width: 100%; margin-top: 0.5rem; }
+    }
   `]
 })
 export class MembershipComponent {
