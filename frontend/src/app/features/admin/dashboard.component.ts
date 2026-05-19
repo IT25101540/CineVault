@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../core/services/admin.service';
 import { DashboardStats, Admin } from '../../core/models/models';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
   template: `
     <div class="container">
       <div class="page-header">
@@ -67,6 +68,47 @@ import { DashboardStats, Admin } from '../../core/models/models';
           <div class="kpi-card">
             <p class="kpi-label">Hidden Reviews</p>
             <p class="kpi-value">{{ stats.flaggedReviews }}</p>
+          </div>
+        </div>
+
+        <!-- Revenue Stats Widget (NEW Feature Component) -->
+        <div class="dashboard-row" style="margin-bottom: 2rem; display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+          <div class="widget-card">
+            <h3 class="widget-title">Financial Revenue Dashboard</h3>
+            <p class="text-xs text-muted" style="margin-bottom: 1rem;">Real-time income tracks from CineVault movie rental transactions</p>
+            <div class="revenue-grid" *ngIf="revenue">
+              <div class="rev-card">
+                <span class="rev-label">Daily Income</span>
+                <span class="rev-value">LKR {{ revenue.dailyRevenue | number:'1.2-2' }}</span>
+              </div>
+              <div class="rev-card">
+                <span class="rev-label">Monthly Income</span>
+                <span class="rev-value">LKR {{ revenue.monthlyRevenue | number:'1.2-2' }}</span>
+              </div>
+              <div class="rev-card highlight">
+                <span class="rev-label">Total Earnings</span>
+                <span class="rev-value">LKR {{ revenue.totalRevenue | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="widget-card">
+            <h3 class="widget-title">Promo Code Generator</h3>
+            <p class="text-xs text-muted" style="margin-bottom: 1rem;">Create new discount codes for users</p>
+            <form (submit)="createPromoCode($event)">
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="text-xs text-muted">Promo Code</label>
+                <input type="text" [(ngModel)]="newPromoCode" name="code" class="form-control text-sm" placeholder="e.g. SAVE20" required />
+              </div>
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="text-xs text-muted">Discount Percentage (%)</label>
+                <input type="number" min="1" max="100" [(ngModel)]="newDiscount" name="discount" class="form-control text-sm" placeholder="e.g. 20" required />
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm btn-block">Generate Code</button>
+            </form>
+            <div *ngIf="generatedPromo" class="promo-success-alert text-xs">
+              Generated: <strong>{{ generatedPromo.code }}</strong> ({{ generatedPromo.discountPercentage }}% Off)
+            </div>
           </div>
         </div>
 
@@ -141,24 +183,74 @@ import { DashboardStats, Admin } from '../../core/models/models';
     .quick-card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;transition:all .2s;cursor:pointer;}
     .quick-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.3);}
     .quick-icon-wrap{width:42px;height:42px;border-radius:var(--radius);background:var(--surface-2);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;color:var(--accent);}
+    
+    .widget-card{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;}
+    .widget-title{font-size:1.1rem;font-weight:600;color:var(--text);margin-bottom:0.25rem;}
+    .revenue-grid{display:flex;flex-direction:column;gap:0.75rem;}
+    .rev-card{display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;background:var(--surface-2);border-radius:var(--radius);border:1px solid var(--border);}
+    .rev-card.highlight{background:linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-rgb), 0.05));border-color:var(--accent);}
+    .rev-label{font-size:0.875rem;color:var(--text-muted);font-weight:500;}
+    .rev-value{font-size:1.1rem;font-weight:700;color:var(--text);}
+    .rev-card.highlight .rev-value{color:var(--accent);}
+    
+    .form-group{display:flex;flex-direction:column;gap:.35rem;}
+    .form-control{background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:.5rem .75rem;border-radius:var(--radius);font-size:.9rem;outline:none;transition:border-color 0.15s;}
+    .form-control:focus{border-color:var(--accent);}
+    .btn-block{width:100%;text-align:center;justify-content:center;}
+    .promo-success-alert{margin-top:0.75rem;padding:0.5rem .75rem;background:rgba(46,204,113,0.15);border:1px solid #2ecc71;border-radius:var(--radius);color:#2ecc71;text-align:center;}
+    
+    @media(max-width:800px){
+      .dashboard-row{grid-template-columns:1fr !important;}
+    }
   `]
 })
 export class DashboardComponent implements OnInit {
   stats: DashboardStats | null = null;
   loading = true;
   currentAdmin: Admin | null = null;
+  
+  // New States
+  revenue: any = null;
+  newPromoCode = '';
+  newDiscount: number | null = null;
+  generatedPromo: any = null;
 
   constructor(private adminService: AdminService) {}
 
   ngOnInit() {
     this.currentAdmin = this.adminService.currentAdmin;
     this.adminService.getDashboard().subscribe({
-      next: s => { this.stats = s; this.loading = false; },
+      next: s => { 
+        this.stats = s; 
+        this.loading = false; 
+      },
       error: () => { this.loading = false; }
+    });
+    
+    // Fetch Revenue Stats
+    this.adminService.getRevenueStats().subscribe({
+      next: rev => { this.revenue = rev; },
+      error: (err) => { console.error("Failed to load revenue", err); }
     });
   }
 
   hasRole(roles: string[]): boolean {
     return this.currentAdmin ? roles.includes(this.currentAdmin.role) : false;
+  }
+
+  createPromoCode(event: Event) {
+    event.preventDefault();
+    if (!this.newPromoCode || !this.newDiscount) return;
+    this.adminService.generatePromoCode(this.newPromoCode, this.newDiscount).subscribe({
+      next: (promo) => {
+        this.generatedPromo = promo;
+        this.newPromoCode = '';
+        this.newDiscount = null;
+      },
+      error: (err) => {
+        console.error("Failed to generate promo code", err);
+        alert("Failed to generate promo code.");
+      }
+    });
   }
 }
