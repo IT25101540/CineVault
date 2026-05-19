@@ -15,6 +15,6 @@ public interface UserService {
     Optional<UserDTO> login(String username, String password);
     Optional<UserDTO> findById(String id);
     List<UserDTO> findAll();
-    UserDTO update(String id, String email, String password, String membershipType, Boolean active);
+    UserDTO update(String id, String username, String email, String password, String membershipType, Boolean active);
     void deactivate(String id);
 }

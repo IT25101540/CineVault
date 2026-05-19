@@ -75,12 +75,16 @@ public class UserRestController {
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> update(@PathVariable String id,
                                           @RequestBody Map<String, Object> body) {
+        String username = body.get("username") != null ? body.get("username").toString() : null;
         String email = body.get("email") != null ? body.get("email").toString() : null;
         String password = body.get("password") != null ? body.get("password").toString() : null;
         String membershipType = body.get("membershipType") != null ? body.get("membershipType").toString() : null;
-        Boolean active = body.get("active") != null ? Boolean.parseBoolean(body.get("active").toString()) : null;
+        Boolean active = null;
+        if (body.get("active") != null) {
+            active = Boolean.parseBoolean(body.get("active").toString());
+        }
 
-        UserDTO updated = userService.update(id, email, password, membershipType, active);
+        UserDTO updated = userService.update(id, username, email, password, membershipType, active);
         return ResponseEntity.ok(updated);
     }
 

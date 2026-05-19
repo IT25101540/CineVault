@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
 import { AdminService } from '../../core/services/admin.service';
 import { User, Admin } from '../../core/models/models';
@@ -9,7 +10,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
   template: `
     <div class="container">
       <div class="page-header flex-between">
@@ -51,9 +52,8 @@ import { Router } from '@angular/router';
                 <span class="badge badge-red"   *ngIf="!u.active">Inactive</span>
               </td>
               <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
-                <div class="dropdown" *ngIf="currentAdmin?.role === 'SUPER_ADMIN' || currentAdmin?.role === 'USER_ADMIN'">
-                  <button class="btn btn-outline btn-xs" (click)="toggleMembership(u)">Change Plan</button>
-                </div>
+                <button class="btn btn-outline btn-sm" (click)="viewProfile(u)">View Profile</button>
+                <button class="btn btn-ghost btn-sm" (click)="openEditModal(u)">Edit</button>
                 <button class="btn btn-danger btn-sm" (click)="toggleActive(u)" *ngIf="u.active">Deactivate</button>
                 <button class="btn btn-primary btn-sm" (click)="toggleActive(u)" *ngIf="!u.active">Activate</button>
               </td>
@@ -62,18 +62,124 @@ import { Router } from '@angular/router';
         </table>
         <p class="text-muted text-sm" style="padding:.75rem 0;">{{ users.length }} users total</p>
       </div>
+
+      <!-- View Profile Modal -->
+      <div class="modal-backdrop" *ngIf="selectedUserForView" (click)="selectedUserForView = null">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>User Profile</h2>
+            <button class="btn-close" (click)="selectedUserForView = null">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="profile-avatar">{{ selectedUserForView.username.substring(0, 2).toUpperCase() }}</div>
+            <div class="profile-details">
+              <div class="detail-row"><span class="label">User ID:</span><span class="value">{{ selectedUserForView.id }}</span></div>
+              <div class="detail-row"><span class="label">Username:</span><span class="value">{{ selectedUserForView.username }}</span></div>
+              <div class="detail-row"><span class="label">Email Address:</span><span class="value">{{ selectedUserForView.email }}</span></div>
+              <div class="detail-row"><span class="label">Membership Plan:</span><span class="value">
+                <span class="badge" [class.badge-gold]="selectedUserForView.membershipType==='ELITE'" [class.badge-primary]="selectedUserForView.membershipType==='PREMIUM'" [class.badge-gray]="selectedUserForView.membershipType==='FREE' || !selectedUserForView.membershipType">
+                  {{ selectedUserForView.membershipType || 'FREE' }}
+                </span>
+              </span></div>
+              <div class="detail-row"><span class="label">Account Status:</span><span class="value">
+                <span class="badge badge-green" *ngIf="selectedUserForView.active">Active</span>
+                <span class="badge badge-red" *ngIf="!selectedUserForView.active">Inactive</span>
+              </span></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="selectedUserForView = null">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Details Modal -->
+      <div class="modal-backdrop" *ngIf="selectedUserForEdit" (click)="closeEditModal()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Edit User Account</h2>
+            <button class="btn-close" (click)="closeEditModal()">×</button>
+          </div>
+          <form (submit)="saveUserEdit($event)">
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" [(ngModel)]="editUsername" name="username" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" [(ngModel)]="editEmail" name="email" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label>New Password (leave blank to keep current)</label>
+                <input type="password" [(ngModel)]="editPassword" name="password" class="form-control" placeholder="••••••••" />
+              </div>
+              <div class="form-group">
+                <label>Membership Plan</label>
+                <select [(ngModel)]="editMembershipType" name="membershipType" class="form-control">
+                  <option value="FREE">FREE</option>
+                  <option value="PREMIUM">PREMIUM</option>
+                  <option value="ELITE">ELITE</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Account Status</label>
+                <select [(ngModel)]="editActive" name="active" class="form-control">
+                  <option [ngValue]="true">Active</option>
+                  <option [ngValue]="false">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline" (click)="closeEditModal()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
     .admin-nav{display:flex;gap:.25rem;flex-wrap:wrap;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
     .admin-nav a{display:flex;align-items:center;gap:.35rem;color:var(--text-muted);font-size:.875rem;font-weight:500;padding:.4rem .75rem;border-radius:var(--radius);text-decoration:none;transition:all .18s;}
     .admin-nav a:hover,.admin-nav a.active{color:var(--text);background:var(--surface-2);}
+
+    /* Modal styles with beautiful Glassmorphism */
+    .modal-backdrop{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:1000;}
+    .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:480px;box-shadow:0 24px 64px rgba(0,0,0,0.6);animation:fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);overflow:hidden;}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);}
+    .modal-header h2{font-size:1.2rem;font-weight:600;margin:0;}
+    .btn-close{background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;padding:0;line-height:1;}
+    .btn-close:hover{color:var(--text);}
+    .modal-body{padding:1.5rem;display:flex;flex-direction:column;gap:1.1rem;}
+    .modal-footer{display:flex;justify-content:flex-end;gap:.5rem;padding:1.1rem 1.5rem;background:var(--surface-2);border-top:1px solid var(--border);}
+    .detail-row{display:flex;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border);}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-row .label{color:var(--text-muted);font-size:.875rem;}
+    .detail-row .value{font-weight:500;font-size:.875rem;}
+    .profile-avatar{width:64px;height:64px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;margin:0 auto .75rem auto;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+    .form-group{display:flex;flex-direction:column;gap:.35rem;}
+    .form-group label{font-size:.825rem;color:var(--text-muted);font-weight:500;}
+    .form-control{background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:.6rem .75rem;border-radius:var(--radius);font-size:.9rem;outline:none;transition:border-color 0.15s;}
+    .form-control:focus{border-color:var(--accent);}
+    @keyframes fadeIn { from{opacity:0;transform:scale(0.96);} to{opacity:1;transform:scale(1);} }
   `]
 })
 export class AdminUsersComponent implements OnInit {
   users: User[] = [];
   loading = true;
   currentAdmin: Admin | null = null;
+
+  // Modal controls
+  selectedUserForView: User | null = null;
+  selectedUserForEdit: User | null = null;
+
+  // Form binds
+  editUsername = '';
+  editEmail = '';
+  editPassword = '';
+  editMembershipType = '';
+  editActive = true;
 
   constructor(private userService: UserService, private adminService: AdminService, private router: Router) {}
 
@@ -84,37 +190,78 @@ export class AdminUsersComponent implements OnInit {
       return;
     }
 
-    this.userService.getAll().subscribe({ next: u => { this.users = u; this.loading = false; }, error: () => { this.loading = false; } });
+    this.loadUsers();
+  }
+
+  loadUsers() {
+    this.userService.getAll().subscribe({
+      next: u => { this.users = u; this.loading = false; },
+      error: () => { this.loading = false; }
+    });
   }
 
   hasRole(roles: string[]): boolean {
     return this.currentAdmin ? roles.includes(this.currentAdmin.role) : false;
   }
   
+  viewProfile(user: User) {
+    this.selectedUserForView = user;
+  }
+
+  openEditModal(user: User) {
+    this.selectedUserForEdit = user;
+    this.editUsername = user.username;
+    this.editEmail = user.email;
+    this.editPassword = '';
+    this.editMembershipType = user.membershipType || 'FREE';
+    this.editActive = user.active;
+  }
+
+  closeEditModal() {
+    this.selectedUserForEdit = null;
+  }
+
+  saveUserEdit(event: Event) {
+    event.preventDefault();
+    if (!this.selectedUserForEdit) return;
+
+    const updatedData: any = {
+      username: this.editUsername,
+      email: this.editEmail,
+      membershipType: this.editMembershipType,
+      active: this.editActive
+    };
+
+    if (this.editPassword && this.editPassword.trim()) {
+      updatedData.password = this.editPassword;
+    }
+
+    this.userService.update(this.selectedUserForEdit.id, updatedData).subscribe({
+      next: (updatedUser) => {
+        this.users = this.users.map(u => u.id === updatedUser.id ? updatedUser : u);
+        this.closeEditModal();
+      },
+      error: (err) => {
+        console.error("Failed to update user details", err);
+        alert("Failed to update user details.");
+      }
+    });
+  }
+
   toggleActive(user: User) {
     const action = user.active ? 'Deactivate' : 'Activate';
     if (confirm(`${action} this user?`)) {
       this.userService.update(user.id, { active: !user.active }).subscribe({
         next: (updated) => {
           this.users = this.users.map(u => u.id === user.id ? updated : u);
+          if (this.selectedUserForView && this.selectedUserForView.id === user.id) {
+            this.selectedUserForView = updated;
+          }
         },
         error: (err) => {
           console.error(`Failed to ${action.toLowerCase()} user`, err);
           alert(`Failed to update user status.`);
         }
-      });
-    }
-  }
-
-  toggleMembership(user: User) {
-    const plans: Array<'FREE' | 'PREMIUM' | 'ELITE'> = ['FREE', 'PREMIUM', 'ELITE'];
-    const currentIndex = plans.indexOf(user.membershipType || 'FREE');
-    const nextIndex = (currentIndex + 1) % plans.length;
-    const nextPlan = plans[nextIndex];
-
-    if (confirm(`Change ${user.username}'s membership from ${user.membershipType || 'FREE'} to ${nextPlan}?`)) {
-      this.userService.update(user.id, { membershipType: nextPlan }).subscribe(updated => {
-        this.users = this.users.map(u => u.id === user.id ? updated : u);
       });
     }
   }
