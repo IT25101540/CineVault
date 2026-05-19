@@ -112,7 +112,7 @@ public class AdminRestController {
     /** POST /api/admin/promocodes – Generate a promo code */
     @PostMapping("/promocodes")
     public ResponseEntity<com.movieplatform.model.PromoCode> generatePromoCode(@RequestBody Map<String, Object> body) {
-        String code = (String) body.get("code");
+        String code = body.get("code") != null ? body.get("code").toString().trim().toUpperCase() : "";
         double discount = Double.parseDouble(body.get("discountPercentage").toString());
         com.movieplatform.model.PromoCode promo = new com.movieplatform.model.PromoCode(null, code, discount, true);
         return ResponseEntity.ok(promoCodeRepository.save(promo));
