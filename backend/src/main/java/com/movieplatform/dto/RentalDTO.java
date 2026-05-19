@@ -13,6 +13,9 @@ public class RentalDTO {
     private String status;
     private double totalFee;
     private long daysOverdue;  // computed field
+    private String username;
+    private String userEmail;
+    private String movieTitle;
 
     public RentalDTO() {}
 
@@ -34,6 +37,13 @@ public class RentalDTO {
     public void setTotalFee(double totalFee) { this.totalFee = totalFee; }
     public long getDaysOverdue() { return daysOverdue; }
     public void setDaysOverdue(long daysOverdue) { this.daysOverdue = daysOverdue; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public String getUserEmail() { return userEmail; }
+    public void setUserEmail(String userEmail) { this.userEmail = userEmail; }
+    public String getMovieTitle() { return movieTitle; }
+    public void setMovieTitle(String movieTitle) { this.movieTitle = movieTitle; }
 
     @Override public String toString() { return "RentalDTO{id='" + id + "', status='" + status + "'}"; }
 }

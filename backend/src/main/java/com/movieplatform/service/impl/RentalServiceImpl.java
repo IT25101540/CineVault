@@ -4,6 +4,8 @@ package com.movieplatform.service.impl;
 import com.movieplatform.dto.RentalDTO;
 import com.movieplatform.model.RentalTransaction;
 import com.movieplatform.repository.RentalRepository;
+import com.movieplatform.repository.UserRepository;
+import com.movieplatform.repository.MovieRepository;
 import com.movieplatform.service.RentalService;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +16,13 @@ import java.util.*;
 public class RentalServiceImpl implements RentalService {
 
     private final RentalRepository rentalRepository;
+    private final UserRepository userRepository;
+    private final MovieRepository movieRepository;
 
-    public RentalServiceImpl(RentalRepository rentalRepository) {
+    public RentalServiceImpl(RentalRepository rentalRepository, UserRepository userRepository, MovieRepository movieRepository) {
         this.rentalRepository = rentalRepository;
+        this.userRepository = userRepository;
+        this.movieRepository = movieRepository;
     }
 
     @Override
@@ -95,6 +101,24 @@ public class RentalServiceImpl implements RentalService {
                 r.getReturnedDate() == null) {
             dto.setDaysOverdue((int) java.time.temporal.ChronoUnit.DAYS.between(r.getDueDate(), LocalDate.now()));
         }
+
+        // Resolve username and email from userId
+        if (userRepository != null && r.getUserId() != null) {
+            userRepository.findById(r.getUserId()).ifPresent(u -> {
+                dto.setUsername(u.getUsername());
+                dto.setUserEmail(u.getEmail());
+            });
+        }
+        if (dto.getUsername() == null) dto.setUsername(r.getUserId());
+
+        // Resolve movie title from movieId
+        if (movieRepository != null && r.getMovieId() != null) {
+            movieRepository.findById(r.getMovieId()).ifPresent(m -> {
+                dto.setMovieTitle(m.getTitle());
+            });
+        }
+        if (dto.getMovieTitle() == null) dto.setMovieTitle("Unknown Movie (" + r.getMovieId() + ")");
+
         return dto;
     }
 }

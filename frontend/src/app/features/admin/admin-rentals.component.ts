@@ -4,7 +4,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RentalService } from '../../core/services/rental.service';
 import { AdminService } from '../../core/services/admin.service';
-import { Rental, Admin } from '../../core/models/models';
+import { UserService } from '../../core/services/user.service';
+import { Rental, Admin, User } from '../../core/models/models';
 import { Router } from '@angular/router';
 
 @Component({
@@ -46,7 +47,9 @@ import { Router } from '@angular/router';
             <tr *ngFor="let r of filtered" [style.background]="r.status==='OVERDUE' ? 'rgba(192,57,43,.06)' : ''">
               <td class="text-sm">
                 <div style="display:flex;flex-direction:column;">
-                  <span style="font-weight:600;">{{ r.username || r.userId }}</span>
+                  <a href="javascript:void(0)" (click)="viewUserProfile(r.userId)" class="text-accent" style="text-decoration:none;font-weight:600;">
+                    {{ r.username || r.userId }}
+                  </a>
                   <span class="text-muted" style="font-size:0.7rem;">{{ r.userEmail }}</span>
                 </div>
               </td>
@@ -73,6 +76,36 @@ import { Router } from '@angular/router';
           </tbody>
         </table>
         <p class="text-muted text-sm" style="padding:.75rem 0;">Showing {{ filtered.length }} of {{ rentals.length }} rentals</p>
+      </div>
+
+      <!-- View Profile Modal -->
+      <div class="modal-backdrop" *ngIf="selectedUserForView" (click)="selectedUserForView = null">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>User Profile</h2>
+            <button class="btn-close" (click)="selectedUserForView = null">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="profile-avatar">{{ selectedUserForView.username.substring(0, 2).toUpperCase() }}</div>
+            <div class="profile-details">
+              <div class="detail-row"><span class="label">User ID:</span><span class="value">{{ selectedUserForView.id }}</span></div>
+              <div class="detail-row"><span class="label">Username:</span><span class="value">{{ selectedUserForView.username }}</span></div>
+              <div class="detail-row"><span class="label">Email Address:</span><span class="value">{{ selectedUserForView.email }}</span></div>
+              <div class="detail-row"><span class="label">Membership Plan:</span><span class="value">
+                <span class="badge" [class.badge-gold]="selectedUserForView.membershipType==='ELITE'" [class.badge-primary]="selectedUserForView.membershipType==='PREMIUM'" [class.badge-gray]="selectedUserForView.membershipType==='FREE' || !selectedUserForView.membershipType">
+                  {{ selectedUserForView.membershipType || 'FREE' }}
+                </span>
+              </span></div>
+              <div class="detail-row"><span class="label">Account Status:</span><span class="value">
+                <span class="badge badge-green" *ngIf="selectedUserForView.active">Active</span>
+                <span class="badge badge-red" *ngIf="!selectedUserForView.active">Inactive</span>
+              </span></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline" (click)="selectedUserForView = null">Close</button>
+          </div>
+        </div>
       </div>
 
       <!-- Edit Rental Modal -->
@@ -136,6 +169,13 @@ import { Router } from '@angular/router';
     .form-group label{font-size:.825rem;color:var(--text-muted);font-weight:500;}
     .form-control{background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:.6rem .75rem;border-radius:var(--radius);font-size:.9rem;outline:none;transition:border-color 0.15s;}
     .form-control:focus{border-color:var(--accent);}
+
+    .detail-row{display:flex;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border);}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-row .label{color:var(--text-muted);font-size:.875rem;}
+    .detail-row .value{font-weight:500;font-size:.875rem;}
+    .profile-avatar{width:64px;height:64px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;margin:0 auto .75rem auto;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+
     @keyframes fadeIn { from{opacity:0;transform:scale(0.96);} to{opacity:1;transform:scale(1);} }
   `]
 })
@@ -154,7 +194,14 @@ export class AdminRentalsComponent implements OnInit {
   editReturnedDate = '';
   editTotalFee = 0;
 
-  constructor(private rentalService: RentalService, private adminService: AdminService, private router: Router) {}
+  selectedUserForView: User | null = null;
+
+  constructor(
+    private rentalService: RentalService,
+    private adminService: AdminService,
+    private userService: UserService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.currentAdmin = this.adminService.currentAdmin;
@@ -174,6 +221,18 @@ export class AdminRentalsComponent implements OnInit {
 
   hasRole(roles: string[]): boolean {
     return this.currentAdmin ? roles.includes(this.currentAdmin.role) : false;
+  }
+
+  viewUserProfile(userId: string) {
+    this.userService.getById(userId).subscribe({
+      next: (user) => {
+        this.selectedUserForView = user;
+      },
+      error: (err) => {
+        console.error("Failed to load user profile", err);
+        alert("Failed to load user profile details.");
+      }
+    });
   }
 
   openEditModal(rental: Rental) {
