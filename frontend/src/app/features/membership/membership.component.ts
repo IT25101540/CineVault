@@ -205,9 +205,13 @@ import { UserService } from '../../core/services/user.service';
         <h1 class="mt-4">Welcome to the <span class="text-accent">Elite Circle!</span></h1>
         <p class="subtitle">Your <strong>{{ selectedPlan }}</strong> membership is now active. You have unlocked premium features and exclusive content.</p>
         
-        <div class="flex gap-1 justify-center mt-4">
+        <div class="flex gap-1 justify-center mt-4" style="flex-wrap:wrap;">
           <button class="btn btn-primary" routerLink="/movies">Start Watching Now</button>
           <button class="btn btn-outline" (click)="step = 1">View My Plan</button>
+          <button class="btn btn-invoice" (click)="downloadInvoice()" *ngIf="selectedPlan !== 'FREE'">
+            <span class="material-symbols-outlined" style="font-size:1.1rem;vertical-align:middle;">receipt_long</span>
+            Download Invoice PDF
+          </button>
         </div>
       </div>
     </div>
@@ -292,6 +296,8 @@ import { UserService } from '../../core/services/user.service';
     .btn-primary:hover { filter: brightness(1.1); transform: scale(1.02); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-outline { background: transparent; border: 1px solid rgba(234, 229, 208, 0.2); color: #eae5d0; }
+    .btn-invoice { background: linear-gradient(135deg, #1e3a5f, #2563eb); color: #fff; border: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-invoice:hover { filter: brightness(1.15); transform: scale(1.02); }
     .btn-sm { padding: 0.5rem 1.2rem; font-size: 0.85rem; border-radius: 8px; }
     .btn-danger { background: #dc2626; color: #fff; border: none; }
     .btn-danger:hover { background: #b91c1c; }
@@ -403,6 +409,140 @@ export class MembershipComponent {
         alert('Failed to cancel membership. Please try again.');
       }
     });
+  }
+
+  downloadInvoice() {
+    const invoiceNo = 'MEM-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const price = this.selectedPlan === 'PREMIUM' ? '2,500.00' : '5,800.00';
+    const planLabel = this.selectedPlan === 'PREMIUM' ? 'CinePremium (Pro)' : 'CineElite (VIP)';
+    const features = this.selectedPlan === 'PREMIUM'
+      ? ['4K Ultra HD + HDR Streaming', 'Ad-Free Experience', '4 Simultaneous Devices', 'Full Movie &amp; Series Library', 'Offline Downloads']
+      : ['Everything in CinePremium', 'Early Access to New Releases', 'Exclusive Director&#39;s Cuts', 'Priority Customer Support', 'Free Movie Rentals (included in plan)'];
+
+    const featureRows = features.map(f => `
+      <tr>
+        <td style="padding:8px 12px; border-bottom:1px solid #f0f0f0;">
+          <span style="color:#2563eb;margin-right:8px;">✓</span>${f}
+        </td>
+        <td style="padding:8px 12px; border-bottom:1px solid #f0f0f0; text-align:right; color:#16a34a;">Included</td>
+      </tr>`).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CineVault Membership Invoice – ${invoiceNo}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #1a1a2e; font-size: 13px; }
+    .page { max-width: 700px; margin: 30px auto; padding: 40px 50px; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+    .logo { font-size: 26px; font-weight: 900; letter-spacing: 1px; color: #1a1a2e; }
+    .logo span { color: #e67e22; }
+    .invoice-meta { text-align: right; }
+    .invoice-meta .inv-no { font-size: 18px; font-weight: 700; color: #2563eb; }
+    .invoice-meta .inv-date { font-size: 12px; color: #666; margin-top: 4px; }
+    .divider { border: none; border-top: 2px solid #2563eb; margin: 0 0 24px 0; }
+    .bill-row { display: flex; justify-content: space-between; margin-bottom: 24px; }
+    .bill-section h3 { font-size: 11px; text-transform: uppercase; color: #999; letter-spacing: 1px; margin-bottom: 8px; }
+    .bill-section p { font-size: 14px; color: #1a1a2e; font-weight: 600; }
+    .bill-section .sub { font-size: 12px; color: #666; font-weight: 400; margin-top: 2px; }
+    .plan-badge { display: inline-block; background: linear-gradient(135deg, #1e3a5f, #2563eb); color: #fff; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    thead th { background: #f8f9ff; padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: #666; letter-spacing: 0.8px; border-bottom: 2px solid #e0e0e0; }
+    thead th:last-child { text-align: right; }
+    .total-row td { padding: 14px 12px; background: #f0f7ff; font-weight: 700; font-size: 15px; border-top: 2px solid #2563eb; }
+    .total-row td:last-child { text-align: right; color: #2563eb; font-size: 18px; }
+    .status-badge { display: inline-block; background: #dcfce7; color: #16a34a; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-top: 8px; }
+    .footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
+    .footer-note { font-size: 11px; color: #999; }
+    .footer-brand { font-size: 12px; font-weight: 700; color: #2563eb; }
+    @media print {
+      body { background: #fff; }
+      .page { box-shadow: none; border: none; margin: 0; border-radius: 0; }
+      @page { margin: 15mm; size: A4; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="logo">Cine<span>Vault</span></div>
+      <p style="font-size:11px;color:#999;margin-top:4px;">Premium Cinema Experience</p>
+    </div>
+    <div class="invoice-meta">
+      <div class="inv-no">INVOICE</div>
+      <div class="inv-date"># ${invoiceNo}</div>
+      <div class="inv-date">${dateStr} at ${timeStr}</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="bill-row">
+    <div class="bill-section">
+      <h3>Billed To</h3>
+      <p>${this.formData.name || this.currentUser?.username || 'Member'}</p>
+      <p class="sub">${this.formData.email || this.currentUser?.email || ''}</p>
+      ${this.formData.phone ? `<p class="sub">${this.formData.phone}</p>` : ''}
+      ${this.formData.location ? `<p class="sub">${this.formData.location}</p>` : ''}
+    </div>
+    <div class="bill-section" style="text-align:right;">
+      <h3>Subscription Plan</h3>
+      <div class="plan-badge">${this.selectedPlan}</div>
+      <p class="sub" style="margin-top:8px;">${planLabel}</p>
+      <div class="status-badge">ACTIVE</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th style="text-align:right;">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:12px; border-bottom:1px solid #f0f0f0;">
+          <strong>${planLabel} – Monthly Subscription</strong>
+          <div style="font-size:11px;color:#666;margin-top:3px;">Billing period: ${dateStr}</div>
+        </td>
+        <td style="padding:12px; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:600;">LKR ${price}</td>
+      </tr>
+      ${featureRows}
+    </tbody>
+    <tfoot>
+      <tr class="total-row">
+        <td>Total Amount Paid</td>
+        <td>LKR ${price}</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <p style="font-size:12px;color:#666;margin-bottom:24px;">Payment Method: Credit / Debit Card &nbsp;|&nbsp; Currency: LKR (Sri Lankan Rupee)</p>
+
+  <div class="footer">
+    <div class="footer-note">
+      Thank you for subscribing to CineVault.<br>
+      For support: support@cinevault.lk
+    </div>
+    <div class="footer-brand">cinevault.lk</div>
+  </div>
+</div>
+<script>window.onload = function(){ window.print(); }<\/script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    }
   }
 }
 
