@@ -53,79 +53,85 @@ import { Rental } from '../../core/models/models';
       <!-- Detailed Premium Invoice Modal -->
       <div class="modal-overlay" *ngIf="selectedRental" (click)="closeInvoice()">
         <div class="modal-box invoice-box" (click)="$event.stopPropagation()">
-          <div class="invoice-header">
-            <div class="brand">
-              <span class="brand-vault">CINE</span><span class="brand-title">VAULT</span>
+          <div id="invoice-print-area">
+            <div class="invoice-header">
+              <div class="brand">
+                <span class="brand-vault">CINE</span><span class="brand-title">VAULT</span>
+              </div>
+              <div class="invoice-tag">
+                <h3>INVOICE</h3>
+                <p class="invoice-num">#{{ selectedRental.id.substring(0, 8).toUpperCase() }}</p>
+              </div>
             </div>
-            <div class="invoice-tag">
-              <h3>INVOICE</h3>
-              <p class="invoice-num">#{{ selectedRental.id.substring(0, 8).toUpperCase() }}</p>
+
+            <div class="divider-dashed"></div>
+
+            <div class="invoice-meta-grid">
+              <div>
+                <span class="meta-lbl">BILLED TO</span>
+                <p class="meta-val font-semibold">{{ selectedRental.username || 'Valued Customer' }}</p>
+                <p class="meta-email text-muted text-xs">{{ selectedRental.userEmail || 'customer@cinevault.com' }}</p>
+              </div>
+              <div style="text-align: right;">
+                <span class="meta-lbl">INVOICE DATE</span>
+                <p class="meta-val">{{ selectedRental.rentalDate | date:'dd MMM yyyy' }}</p>
+                <span class="meta-lbl" style="margin-top: .5rem; display: block;">DUE DATE</span>
+                <p class="meta-val">{{ selectedRental.dueDate | date:'dd MMM yyyy' }}</p>
+              </div>
+            </div>
+
+            <div class="invoice-table-wrap">
+              <table class="invoice-bill-table">
+                <thead>
+                  <tr>
+                    <th>Item / Description</th>
+                    <th style="text-align: right;">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <p class="font-semibold">{{ selectedRental.movieTitle || 'Movie Rental' }}</p>
+                      <p class="text-xs text-muted">7-day CineVault stream license</p>
+                    </td>
+                    <td style="text-align: right;" class="font-semibold">LKR 500.00</td>
+                  </tr>
+                  <!-- Discount Row (if total fee is less than 500 due to promo code) -->
+                  <tr *ngIf="selectedRental.totalFee < 500.0 && selectedRental.totalFee >= 0">
+                    <td>
+                      <p class="font-semibold text-green">Promo Discount</p>
+                      <p class="text-xs text-muted" *ngIf="selectedRental.promoCode">Applied Code: {{ selectedRental.promoCode }}</p>
+                    </td>
+                    <td style="text-align: right; color:#2ecc71;" class="font-semibold">
+                      -LKR {{ (500.0 - selectedRental.totalFee) | number:'1.2-2' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="divider-dashed"></div>
+
+            <div class="invoice-summary">
+              <div class="summary-line">
+                <span class="text-muted">Payment Method:</span>
+                <span class="font-semibold">{{ selectedRental.paymentMethod || 'Credit Card' }}</span>
+              </div>
+              <div class="summary-line total-line">
+                <span class="total-lbl">Total Paid:</span>
+                <span class="total-val">LKR {{ selectedRental.totalFee | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <div class="invoice-footer">
+              <p class="thank-you">Thank you for your rental!</p>
+              <p class="support-text">For questions, contact support&#64;cinevault.com</p>
             </div>
           </div>
 
-          <div class="divider-dashed"></div>
-
-          <div class="invoice-meta-grid">
-            <div>
-              <span class="meta-lbl">BILLED TO</span>
-              <p class="meta-val font-semibold">{{ selectedRental.username || 'Valued Customer' }}</p>
-              <p class="meta-email text-muted text-xs">{{ selectedRental.userEmail || 'customer@cinevault.com' }}</p>
-            </div>
-            <div style="text-align: right;">
-              <span class="meta-lbl">INVOICE DATE</span>
-              <p class="meta-val">{{ selectedRental.rentalDate | date:'dd MMM yyyy' }}</p>
-              <span class="meta-lbl" style="margin-top: .5rem; display: block;">DUE DATE</span>
-              <p class="meta-val">{{ selectedRental.dueDate | date:'dd MMM yyyy' }}</p>
-            </div>
-          </div>
-
-          <div class="invoice-table-wrap">
-            <table class="invoice-bill-table">
-              <thead>
-                <tr>
-                  <th>Item / Description</th>
-                  <th style="text-align: right;">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <p class="font-semibold">{{ selectedRental.movieTitle || 'Movie Rental' }}</p>
-                    <p class="text-xs text-muted">7-day CineVault stream license</p>
-                  </td>
-                  <td style="text-align: right;" class="font-semibold">LKR 500.00</td>
-                </tr>
-                <!-- Discount Row (if total fee is less than 500 due to promo code) -->
-                <tr *ngIf="selectedRental.totalFee < 500.0 && selectedRental.totalFee >= 0">
-                  <td>
-                    <p class="font-semibold text-green">Promo Discount</p>
-                    <p class="text-xs text-muted" *ngIf="selectedRental.promoCode">Applied Code: {{ selectedRental.promoCode }}</p>
-                  </td>
-                  <td style="text-align: right; color:#2ecc71;" class="font-semibold">
-                    -LKR {{ (500.0 - selectedRental.totalFee) | number:'1.2-2' }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="divider-dashed"></div>
-
-          <div class="invoice-summary">
-            <div class="summary-line">
-              <span class="text-muted">Payment Method:</span>
-              <span class="font-semibold">{{ selectedRental.paymentMethod || 'Credit Card' }}</span>
-            </div>
-            <div class="summary-line total-line">
-              <span class="total-lbl">Total Paid:</span>
-              <span class="total-val">LKR {{ selectedRental.totalFee | number:'1.2-2' }}</span>
-            </div>
-          </div>
-
-          <div class="invoice-footer">
-            <p class="thank-you">Thank you for your rental!</p>
-            <p class="support-text">For questions, contact support&#64;cinevault.com</p>
-            <button class="btn btn-primary w-full" style="margin-top:1.5rem;" (click)="closeInvoice()">Close Receipt</button>
+          <div style="display:flex;gap:.5rem;margin-top:1.5rem;width:100%;">
+            <button class="btn btn-outline w-full" (click)="downloadPDF()">Download PDF</button>
+            <button class="btn btn-primary w-full" (click)="closeInvoice()">Close</button>
           </div>
         </div>
       </div>
@@ -309,6 +315,63 @@ export class MyRentalsComponent implements OnInit {
 
   closeInvoice() {
     this.selectedRental = null;
+  }
+
+  downloadPDF() {
+    if (!this.selectedRental) return;
+    const printContent = document.getElementById("invoice-print-area");
+    const WindowPrt = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
+    if (WindowPrt) {
+      WindowPrt.document.write(`
+        <html>
+          <head>
+            <title>CineVault Invoice - ${this.selectedRental.id.substring(0, 8).toUpperCase()}</title>
+            <style>
+              body { font-family: 'Outfit', 'Inter', sans-serif; padding: 40px; color: #111; background: #fff; }
+              .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+              .brand { font-size: 24px; font-weight: 800; letter-spacing: 0.05em; }
+              .brand-vault { color: #111; }
+              .brand-title { color: #e29b12; }
+              .invoice-tag h3 { font-size: 18px; font-weight: 700; color: #e29b12; margin: 0; }
+              .invoice-num { font-size: 12px; font-family: monospace; color: #666; margin: 3px 0 0 0; }
+              .divider-dashed { border-top: 1px dashed #ccc; margin: 20px 0; }
+              .invoice-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 14px; margin-bottom: 20px; }
+              .meta-lbl { display: block; font-size: 10px; font-weight: 600; color: #666; margin-bottom: 3px; letter-spacing: 0.08em; }
+              .meta-val { margin: 0; font-weight: 600; }
+              .meta-email { margin: 0; color: #666; font-size: 12px; }
+              .invoice-table-wrap { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+              .invoice-bill-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+              .invoice-bill-table th { text-align: left; font-size: 11px; font-weight: 600; color: #666; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+              .invoice-bill-table td { padding: 10px 0 0 0; vertical-align: top; }
+              .invoice-bill-table td p { margin: 0; }
+              .font-semibold { font-weight: 600; }
+              .text-xs { font-size: 12px; }
+              .text-muted { color: #666; }
+              .text-green { color: #27ae60; }
+              .invoice-summary { display: flex; flex-direction: column; gap: 8px; font-size: 14px; margin-bottom: 20px; }
+              .summary-line { display: flex; justify-content: space-between; }
+              .total-line { border-top: 1px solid #ddd; padding-top: 10px; margin-top: 5px; }
+              .total-lbl { font-weight: 700; }
+              .total-val { font-size: 18px; font-weight: 700; color: #e29b12; }
+              .invoice-footer { text-align: center; font-size: 13px; margin-top: 40px; }
+              .thank-you { font-weight: 600; margin: 0 0 5px 0; }
+              .support-text { color: #666; margin: 0; }
+            </style>
+          </head>
+          <body>
+            ${printContent ? printContent.innerHTML : ''}
+            <script>
+              setTimeout(() => {
+                window.print();
+                window.close();
+              }, 500);
+            </script>
+          </body>
+        </html>
+      `);
+      WindowPrt.document.close();
+      WindowPrt.focus();
+    }
   }
 }
 
