@@ -56,6 +56,35 @@ public class RentalServiceImpl implements RentalService {
     @Override
     public void delete(String id) { rentalRepository.deleteById(id); }
 
+    @Override
+    public RentalDTO update(String id, String status, LocalDate rentalDate, LocalDate dueDate, LocalDate returnedDate, Double totalFee) {
+        RentalTransaction r = rentalRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rental not found: " + id));
+        if (status != null && !status.isBlank()) r.setStatus(status.toUpperCase());
+        if (rentalDate != null) r.setRentalDate(rentalDate);
+        if (dueDate != null) r.setDueDate(dueDate);
+        
+        if (returnedDate != null) {
+            r.setReturnedDate(returnedDate);
+            if (!"RETURNED".equalsIgnoreCase(r.getStatus())) {
+                r.setStatus("RETURNED");
+            }
+        } else {
+            r.setReturnedDate(null);
+        }
+
+        if (totalFee != null) {
+            r.setTotalFee(totalFee);
+        } else if ("RETURNED".equalsIgnoreCase(r.getStatus()) && r.getReturnedDate() != null) {
+            r.markReturned(r.getReturnedDate());
+        } else {
+            r.setTotalFee(0.0);
+        }
+
+        rentalRepository.save(r);
+        return toDTO(r);
+    }
+
     private RentalDTO toDTO(RentalTransaction r) {
         RentalDTO dto = new RentalDTO();
         dto.setId(r.getId()); dto.setUserId(r.getUserId()); dto.setMovieId(r.getMovieId());

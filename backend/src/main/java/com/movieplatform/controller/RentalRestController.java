@@ -58,6 +58,20 @@ public class RentalRestController {
         return ResponseEntity.ok(rentalService.returnMovie(id));
     }
 
+    /** PUT /api/rentals/{id} – Edit/Update rental details (admin) */
+    @PutMapping("/{id}")
+    public ResponseEntity<RentalDTO> update(@PathVariable String id,
+                                            @RequestBody Map<String, Object> body) {
+        String status = body.get("status") != null ? body.get("status").toString() : null;
+        java.time.LocalDate rentalDate = body.get("rentalDate") != null ? java.time.LocalDate.parse(body.get("rentalDate").toString()) : null;
+        java.time.LocalDate dueDate = body.get("dueDate") != null ? java.time.LocalDate.parse(body.get("dueDate").toString()) : null;
+        java.time.LocalDate returnedDate = body.get("returnedDate") != null && !body.get("returnedDate").toString().isBlank() 
+                ? java.time.LocalDate.parse(body.get("returnedDate").toString()) : null;
+        Double totalFee = body.get("totalFee") != null ? Double.parseDouble(body.get("totalFee").toString()) : null;
+
+        return ResponseEntity.ok(rentalService.update(id, status, rentalDate, dueDate, returnedDate, totalFee));
+    }
+
     /** DELETE /api/rentals/{id} – Remove a rental record (admin) */
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> delete(@PathVariable String id) {

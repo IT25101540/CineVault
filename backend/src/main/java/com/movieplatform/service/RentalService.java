@@ -11,5 +11,6 @@ public interface RentalService {
     List<RentalDTO> findAll();
     Optional<RentalDTO> findById(String id);
     RentalDTO returnMovie(String rentalId);
+    RentalDTO update(String id, String status, java.time.LocalDate rentalDate, java.time.LocalDate dueDate, java.time.LocalDate returnedDate, Double totalFee);
     void delete(String id);
 }

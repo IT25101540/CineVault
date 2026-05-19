@@ -16,5 +16,6 @@ export class RentalService {
     return this.http.post<Rental>(this.url, { userId, movieId });
   }
   returnMovie(id: string): Observable<Rental> { return this.http.put<Rental>(`${this.url}/${id}/return`, {}); }
+  update(id: string, data: Partial<Rental>): Observable<Rental> { return this.http.put<Rental>(`${this.url}/${id}`, data); }
   delete(id: string): Observable<any> { return this.http.delete(`${this.url}/${id}`); }
 }

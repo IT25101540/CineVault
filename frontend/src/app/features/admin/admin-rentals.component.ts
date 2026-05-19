@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { RentalService } from '../../core/services/rental.service';
 import { AdminService } from '../../core/services/admin.service';
 import { Rental, Admin } from '../../core/models/models';
@@ -9,7 +10,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-admin-rentals',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, FormsModule],
   template: `
     <div class="container">
       <div class="page-header">
@@ -63,7 +64,8 @@ import { Router } from '@angular/router';
                 <span class="badge badge-red"    *ngIf="r.status==='OVERDUE'">Overdue</span>
               </td>
               <td class="text-sm">{{ r.totalFee > 0 ? ('$' + (r.totalFee | number:'1.2-2')) : '—' }}</td>
-              <td style="display:flex; gap:0.5rem;">
+              <td style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                <button class="btn btn-primary btn-sm" (click)="openEditModal(r)">Edit</button>
                 <button class="btn btn-outline btn-sm" *ngIf="r.status==='ACTIVE' || r.status==='OVERDUE'" (click)="returnMovie(r.id)">Return</button>
                 <button class="btn btn-danger btn-sm" (click)="remove(r.id)">Remove</button>
               </td>
@@ -72,12 +74,69 @@ import { Router } from '@angular/router';
         </table>
         <p class="text-muted text-sm" style="padding:.75rem 0;">Showing {{ filtered.length }} of {{ rentals.length }} rentals</p>
       </div>
+
+      <!-- Edit Rental Modal -->
+      <div class="modal-backdrop" *ngIf="selectedRentalForEdit" (click)="closeEditModal()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Edit Rental Transaction</h2>
+            <button class="btn-close" (click)="closeEditModal()">×</button>
+          </div>
+          <form (submit)="saveRentalEdit($event)">
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Rental Status</label>
+                <select [(ngModel)]="editStatus" name="status" class="form-control">
+                  <option value="ACTIVE">Active</option>
+                  <option value="RETURNED">Returned</option>
+                  <option value="OVERDUE">Overdue</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Rental Date</label>
+                <input type="date" [(ngModel)]="editRentalDate" name="rentalDate" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label>Due Date</label>
+                <input type="date" [(ngModel)]="editDueDate" name="dueDate" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label>Returned Date (optional)</label>
+                <input type="date" [(ngModel)]="editReturnedDate" name="returnedDate" class="form-control" />
+              </div>
+              <div class="form-group">
+                <label>Total Fee ($)</label>
+                <input type="number" step="0.01" min="0" [(ngModel)]="editTotalFee" name="totalFee" class="form-control" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline" (click)="closeEditModal()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
     .admin-nav{display:flex;gap:.25rem;flex-wrap:wrap;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
     .admin-nav a{display:flex;align-items:center;gap:.35rem;color:var(--text-muted);font-size:.875rem;font-weight:500;padding:.4rem .75rem;border-radius:var(--radius);text-decoration:none;transition:all .18s;}
     .admin-nav a:hover,.admin-nav a.active{color:var(--text);background:var(--surface-2);}
+
+    /* Modal styles with beautiful Glassmorphism */
+    .modal-backdrop{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:1000;}
+    .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:480px;box-shadow:0 24px 64px rgba(0,0,0,0.6);animation:fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);overflow:hidden;}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);}
+    .modal-header h2{font-size:1.2rem;font-weight:600;margin:0;}
+    .btn-close{background:none;border:none;color:var(--text-muted);font-size:1.5rem;cursor:pointer;padding:0;line-height:1;}
+    .btn-close:hover{color:var(--text);}
+    .modal-body{padding:1.5rem;display:flex;flex-direction:column;gap:1.1rem;}
+    .modal-footer{display:flex;justify-content:flex-end;gap:.5rem;padding:1.1rem 1.5rem;background:var(--surface-2);border-top:1px solid var(--border);}
+    .form-group{display:flex;flex-direction:column;gap:.35rem;}
+    .form-group label{font-size:.825rem;color:var(--text-muted);font-weight:500;}
+    .form-control{background:var(--surface-2);border:1px solid var(--border);color:var(--text);padding:.6rem .75rem;border-radius:var(--radius);font-size:.9rem;outline:none;transition:border-color 0.15s;}
+    .form-control:focus{border-color:var(--accent);}
+    @keyframes fadeIn { from{opacity:0;transform:scale(0.96);} to{opacity:1;transform:scale(1);} }
   `]
 })
 export class AdminRentalsComponent implements OnInit {
@@ -87,6 +146,14 @@ export class AdminRentalsComponent implements OnInit {
   currentAdmin: Admin | null = null;
   get filtered() { return this.filter ? this.rentals.filter(r => r.status === this.filter) : this.rentals; }
 
+  // Modal Controls
+  selectedRentalForEdit: Rental | null = null;
+  editStatus = 'ACTIVE';
+  editRentalDate = '';
+  editDueDate = '';
+  editReturnedDate = '';
+  editTotalFee = 0;
+
   constructor(private rentalService: RentalService, private adminService: AdminService, private router: Router) {}
 
   ngOnInit() {
@@ -95,25 +162,67 @@ export class AdminRentalsComponent implements OnInit {
       this.router.navigate(['/admin/dashboard']);
       return;
     }
-    this.rentalService.getAll().subscribe({ next: r => { this.rentals = r; this.loading = false; }, error: () => { this.loading = false; } });
+    this.loadRentals();
+  }
+
+  loadRentals() {
+    this.rentalService.getAll().subscribe({
+      next: r => { this.rentals = r; this.loading = false; },
+      error: () => { this.loading = false; }
+    });
   }
 
   hasRole(roles: string[]): boolean {
     return this.currentAdmin ? roles.includes(this.currentAdmin.role) : false;
   }
+
+  openEditModal(rental: Rental) {
+    this.selectedRentalForEdit = rental;
+    this.editStatus = rental.status;
+    this.editRentalDate = rental.rentalDate ? rental.rentalDate.substring(0, 10) : '';
+    this.editDueDate = rental.dueDate ? rental.dueDate.substring(0, 10) : '';
+    this.editReturnedDate = rental.returnedDate ? rental.returnedDate.substring(0, 10) : '';
+    this.editTotalFee = rental.totalFee || 0;
+  }
+
+  closeEditModal() {
+    this.selectedRentalForEdit = null;
+  }
+
+  saveRentalEdit(event: Event) {
+    event.preventDefault();
+    if (!this.selectedRentalForEdit) return;
+
+    const data = {
+      status: this.editStatus,
+      rentalDate: this.editRentalDate,
+      dueDate: this.editDueDate,
+      returnedDate: this.editReturnedDate || null,
+      totalFee: this.editTotalFee
+    };
+
+    this.rentalService.update(this.selectedRentalForEdit.id, data).subscribe({
+      next: (updated) => {
+        this.rentals = this.rentals.map(r => r.id === updated.id ? updated : r);
+        this.closeEditModal();
+      },
+      error: (err) => {
+        console.error("Failed to update rental", err);
+        alert("Failed to update rental transaction details.");
+      }
+    });
+  }
+
   remove(id: string) {
     if (confirm('Remove this rental record?')) {
       this.rentalService.delete(id).subscribe(() => { this.rentals = this.rentals.filter(r => r.id !== id); });
     }
   }
+
   returnMovie(id: string) {
     if (confirm('Mark this rental as returned?')) {
       this.rentalService.returnMovie(id).subscribe(() => {
-        const r = this.rentals.find(x => x.id === id);
-        if (r) {
-          r.status = 'RETURNED';
-          r.returnedDate = new Date().toISOString();
-        }
+        this.loadRentals();
       });
     }
   }

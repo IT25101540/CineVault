@@ -65,7 +65,7 @@ public class RentalTransaction {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public double getTotalFee() { return totalFee; }
-    // No public setTotalFee – Encapsulation
+    public void setTotalFee(double totalFee) { this.totalFee = totalFee; } // Admin manual override
 
     @Override public String toString() {
         return "RentalTransaction{id='" + id + "', userId='" + userId +
