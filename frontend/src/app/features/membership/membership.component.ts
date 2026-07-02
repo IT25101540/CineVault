@@ -147,36 +147,155 @@ import { UserService } from '../../core/services/user.service';
         </div>
 
         <div class="form-card checkout-card">
-          <div class="grid-form">
-            <div class="form-group">
-              <label class="form-label">Full Name</label>
-              <input type="text" class="form-control" placeholder="Your name" [(ngModel)]="formData.name">
+          <div class="checkout-layout" *ngIf="selectedPlan !== 'FREE'; else basicLayout">
+            <!-- Left Side: Fields -->
+            <div style="display:flex; flex-direction:column; gap:1.5rem;">
+              <div class="grid-form">
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-control" placeholder="Your name" [(ngModel)]="formData.name">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Phone Number</label>
+                  <input type="text" class="form-control" placeholder="+94 77 000 0000" [(ngModel)]="formData.phone">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Location / City</label>
+                  <input type="text" class="form-control" placeholder="Colombo, Sri Lanka" [(ngModel)]="formData.location">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email Address</label>
+                  <input type="email" class="form-control" placeholder="email@example.com" [(ngModel)]="formData.email" [disabled]="!!currentUser">
+                </div>
+              </div>
+
+              <!-- Card Details -->
+              <div class="card-details-section">
+                <h3 style="font-size:1.1rem; color:var(--text); font-weight:600; margin-bottom:1rem; letter-spacing:0.5px;">Card Information</h3>
+                <div class="grid-card-form">
+                  <div class="form-group col-span-2">
+                    <label class="form-label">Card Number</label>
+                    <input type="text" class="form-control" placeholder="4111 2222 3333 4444" 
+                           [(ngModel)]="cardData.number" (input)="onCardNumberInput($event)" maxlength="19">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Expiry Date</label>
+                    <input type="text" class="form-control" placeholder="MM/YY" 
+                           [(ngModel)]="cardData.expiry" (input)="onExpiryInput($event)" maxlength="5">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">CVV</label>
+                    <input type="password" class="form-control" placeholder="•••" 
+                           [(ngModel)]="cardData.cvv" (focus)="cardFlipped = true" (blur)="cardFlipped = false" maxlength="3">
+                  </div>
+                  <div class="form-group col-span-2">
+                    <label class="form-label">Cardholder Name</label>
+                    <input type="text" class="form-control" placeholder="JOHN DOE" [(ngModel)]="cardData.name" (input)="cardData.name = cardData.name.toUpperCase()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Promo Code -->
+              <div class="card-details-section">
+                <h3 style="font-size:1.1rem; color:var(--text); font-weight:600; margin-bottom:0.5rem; letter-spacing:0.5px;">Promo Code</h3>
+                <div class="promo-section">
+                  <input type="text" class="form-control" placeholder="e.g. WELCOME20" [(ngModel)]="promoCode" style="text-transform: uppercase;">
+                  <button class="btn btn-outline" style="padding:0 .8rem; min-height:41px;" (click)="applyPromo()">Apply</button>
+                </div>
+                <div class="promo-feedback promo-success" *ngIf="promoSuccess">{{ promoSuccess }}</div>
+                <div class="promo-feedback promo-error" *ngIf="promoError">{{ promoError }}</div>
+              </div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Phone Number</label>
-              <input type="text" class="form-control" placeholder="+94 77 000 0000" [(ngModel)]="formData.phone">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Location / City</label>
-              <input type="text" class="form-control" placeholder="Colombo, Sri Lanka" [(ngModel)]="formData.location">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Email Address</label>
-              <input type="email" class="form-control" placeholder="email@example.com" [(ngModel)]="formData.email" [disabled]="!!currentUser">
-            </div>
-            <div class="form-group full-width">
-              <label class="form-label">Message / Special Requests (Optional)</label>
-              <textarea class="form-control" rows="4" placeholder="Tell us if you have any specific preferences..." [(ngModel)]="formData.message"></textarea>
+
+            <!-- Right Side: Virtual Card & Summary -->
+            <div class="payment-preview">
+              <div class="card-container-3d">
+                <div class="card-wrapper-3d" [class.flipped]="cardFlipped">
+                  <!-- Front -->
+                  <div class="card-front">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                      <div class="card-chip-3d"></div>
+                      <div class="card-brand">{{ getCardType(cardData.number) }}</div>
+                    </div>
+                    <div class="card-number-3d">{{ formatCardNumber(cardData.number) }}</div>
+                    <div class="card-info-row">
+                      <div>
+                        <div class="card-info-label">Card Holder</div>
+                        <div class="card-info-val">{{ cardData.name || 'YOUR NAME' }}</div>
+                      </div>
+                      <div>
+                        <div class="card-info-label">Expires</div>
+                        <div class="card-info-val">{{ cardData.expiry || 'MM/YY' }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Back -->
+                  <div class="card-back">
+                    <div class="card-magnetic-strip"></div>
+                    <div class="card-signature-area">
+                      <div style="font-size:0.75rem; color:#888; margin-right:10px; font-family:sans-serif; font-style:normal; letter-spacing:0;">CVV</div>
+                      <div>{{ cardData.cvv || '•••' }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Order Summary -->
+              <div class="summary-card">
+                <div class="summary-title">Order Summary</div>
+                <div class="summary-row">
+                  <span class="text-muted">CineVault {{ selectedPlan }} Plan</span>
+                  <span>LKR {{ getOriginalPrice() | number:'1.2-2' }}</span>
+                </div>
+                <div class="summary-row" *ngIf="discountPercentage > 0" style="color:#e74c3c;">
+                  <span>Promo Code Discount (\${{ appliedPromo }})</span>
+                  <span>- LKR {{ getDiscountAmount() | number:'1.2-2' }}</span>
+                </div>
+                <div class="summary-row total">
+                  <span>Total Due</span>
+                  <span>LKR {{ getTotalPrice() | number:'1.2-2' }}</span>
+                </div>
+              </div>
+
+              <button class="btn btn-primary w-full mt-2" (click)="submitForm()" [disabled]="loading">
+                {{ loading ? 'Processing Activation...' : 'Pay & Activate Plan' }}
+              </button>
             </div>
           </div>
 
-          <div class="login-prompt" *ngIf="!currentUser">
-            <p>Already have an account? <a routerLink="/auth/login">Log in here</a> to skip form filling.</p>
-          </div>
+          <!-- Basic / Free Plan layout -->
+          <ng-template #basicLayout>
+            <div class="grid-form">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" placeholder="Your name" [(ngModel)]="formData.name">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="text" class="form-control" placeholder="+94 77 000 0000" [(ngModel)]="formData.phone">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Location / City</label>
+                <input type="text" class="form-control" placeholder="Colombo, Sri Lanka" [(ngModel)]="formData.location">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-control" placeholder="email@example.com" [(ngModel)]="formData.email" [disabled]="!!currentUser">
+              </div>
+              <div class="form-group full-width">
+                <label class="form-label">Message / Special Requests (Optional)</label>
+                <textarea class="form-control" rows="4" placeholder="Tell us if you have any specific preferences..." [(ngModel)]="formData.message"></textarea>
+              </div>
+            </div>
 
-          <button class="btn btn-primary w-full mt-4" (click)="submitForm()" [disabled]="loading">
-            {{ loading ? 'Processing Activation...' : 'Activate ' + selectedPlan + ' Plan' }}
-          </button>
+            <div class="login-prompt" *ngIf="!currentUser">
+              <p>Already have an account? <a routerLink="/auth/login">Log in here</a> to skip form filling.</p>
+            </div>
+
+            <button class="btn btn-primary w-full mt-4" (click)="submitForm()" [disabled]="loading">
+              {{ loading ? 'Processing Activation...' : 'Activate ' + selectedPlan + ' Plan' }}
+            </button>
+          </ng-template>
 
           <div class="form-footer">
             <p>Or reach us directly via:</p>
@@ -253,6 +372,151 @@ import { UserService } from '../../core/services/user.service';
     .form-footer { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(234, 229, 208, 0.05); text-align: center; }
     .form-footer p { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; }
     .direct-contact { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: #25D36622; color: #25D366; border-radius: 50px; font-weight: 600; font-size: 0.875rem; }
+
+    /* Checkout Layout splitting */
+    .checkout-layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 2rem; }
+    
+    /* 3D Virtual Card styles */
+    .payment-preview { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+    
+    .card-container-3d {
+      width: 320px; height: 190px;
+      perspective: 1000px;
+      margin-bottom: 1rem;
+    }
+    
+    .card-wrapper-3d {
+      width: 100%; height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .card-wrapper-3d.flipped {
+      transform: rotateY(180deg);
+    }
+    
+    .card-front, .card-back {
+      position: absolute; width: 100%; height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px; padding: 1.5rem;
+      display: flex; flex-direction: column; justify-content: space-between;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .card-front {
+      background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%);
+      backdrop-filter: blur(20px);
+      z-index: 2;
+      transform: rotateY(0deg);
+    }
+    
+    .card-back {
+      background: linear-gradient(135deg, rgba(15,15,15,0.95) 0%, rgba(30,30,30,0.95) 100%);
+      transform: rotateY(180deg);
+      padding: 0;
+      justify-content: flex-start;
+      gap: 1.2rem;
+    }
+    
+    .card-magnetic-strip {
+      width: 100%; height: 40px;
+      background: #111; margin-top: 1.25rem;
+    }
+    
+    .card-signature-area {
+      width: 80%; height: 35px;
+      background: rgba(255,255,255,0.8);
+      margin: 0 auto; border-radius: 4px;
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 10px; color: #111; font-weight: 600;
+      font-style: italic; font-family: monospace; letter-spacing: 2px;
+    }
+    
+    .card-chip-3d {
+      width: 40px; height: 30px;
+      background: linear-gradient(135deg, #f1c40f, #d35400);
+      border-radius: 4px;
+    }
+    
+    .card-number-3d {
+      font-size: 1.25rem; letter-spacing: 3px;
+      font-family: monospace; color: #eae5d0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      margin: 1.5rem 0 1rem 0;
+    }
+    
+    .card-info-row {
+      display: flex; justify-content: space-between; align-items: flex-end;
+    }
+    
+    .card-info-label {
+      font-size: 0.6rem; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 2px;
+    }
+    
+    .card-info-val {
+      font-size: 0.85rem; font-weight: 600;
+      letter-spacing: 1px; color: #eae5d0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      max-width: 160px;
+    }
+    
+    .card-brand {
+      font-weight: 800; font-style: italic;
+      color: var(--accent); font-size: 1rem;
+      letter-spacing: 1px;
+    }
+    
+    /* Order Summary styles */
+    .summary-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.5rem;
+      width: 100%; display: flex; flex-direction: column; gap: 1rem;
+    }
+    
+    .summary-title {
+      font-weight: 600; font-size: 1rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem; margin-bottom: 0.25rem;
+    }
+    
+    .summary-row {
+      display: flex; justify-content: space-between; font-size: 0.9rem;
+    }
+    
+    .summary-row.total {
+      font-weight: 700; font-size: 1.1rem;
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem; margin-top: 0.25rem;
+      color: var(--accent);
+    }
+    
+    /* Card form grid */
+    .card-details-section {
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem; margin-top: 1rem;
+    }
+    
+    .grid-card-form {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+      margin-top: 1rem;
+    }
+    
+    .col-span-2 { grid-column: span 2; }
+    
+    /* Promo code box */
+    .promo-section {
+      display: flex; gap: 0.5rem; margin-top: 0.5rem;
+    }
+    
+    .promo-feedback {
+      font-size: 0.78rem; font-weight: 500; margin-top: 0.25rem;
+    }
+    .promo-success { color: #2ecc71; }
+    .promo-error { color: #e74c3c; }
 
     /* Success Section */
     .success-section { text-align: center; padding: 2rem 0; }
@@ -361,6 +625,17 @@ export class MembershipComponent {
   showCancelModal = false;
   formData = { name: '', phone: '', location: '', email: '', message: '' };
 
+  // Card details state
+  cardData = { number: '', expiry: '', cvv: '', name: '' };
+  cardFlipped = false;
+
+  // Promo code state
+  promoCode = '';
+  discountPercentage = 0;
+  promoError = '';
+  promoSuccess = '';
+  appliedPromo = '';
+
   constructor(private userService: UserService) {}
 
   get currentUser() { return this.userService.currentUser; }
@@ -377,10 +652,91 @@ export class MembershipComponent {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  onCardNumberInput(event: any) {
+    let input = event.target.value.replace(/\D/g, ''); // numbers only
+    if (input.length > 16) {
+      input = input.substring(0, 16);
+    }
+    const parts = [];
+    for (let i = 0; i < input.length; i += 4) {
+      parts.push(input.substring(i, i + 4));
+    }
+    this.cardData.number = parts.join(' ');
+  }
+
+  onExpiryInput(event: any) {
+    let input = event.target.value.replace(/\D/g, ''); // numbers only
+    if (input.length > 4) {
+      input = input.substring(0, 4);
+    }
+    if (input.length > 2) {
+      this.cardData.expiry = input.substring(0, 2) + '/' + input.substring(2);
+    } else {
+      this.cardData.expiry = input;
+    }
+  }
+
+  formatCardNumber(val: string): string {
+    return val || '•••• •••• •••• ••••';
+  }
+
+  getCardType(number: string): string {
+    const cleanNum = number.replace(/\D/g, '');
+    if (cleanNum.startsWith('4')) return 'VISA';
+    if (cleanNum.startsWith('5')) return 'MASTERCARD';
+    if (cleanNum.startsWith('3')) return 'AMEX';
+    return 'CREDIT CARD';
+  }
+
+  applyPromo() {
+    this.promoError = '';
+    this.promoSuccess = '';
+    const code = this.promoCode.trim().toUpperCase();
+    if (!code) {
+      this.promoError = 'Please enter a promo code.';
+      return;
+    }
+    if (code === 'CINE50') {
+      this.discountPercentage = 50;
+      this.promoSuccess = 'Promo code CINE50 applied! 50% discount.';
+      this.appliedPromo = 'CINE50';
+    } else if (code === 'WELCOME20') {
+      this.discountPercentage = 20;
+      this.promoSuccess = 'Promo code WELCOME20 applied! 20% discount.';
+      this.appliedPromo = 'WELCOME20';
+    } else {
+      this.promoError = 'Invalid promo code.';
+    }
+  }
+
+  getOriginalPrice(): number {
+    if (this.selectedPlan === 'PREMIUM') return 2500;
+    if (this.selectedPlan === 'ELITE') return 5800;
+    return 0;
+  }
+
+  getDiscountAmount(): number {
+    return (this.getOriginalPrice() * this.discountPercentage) / 100;
+  }
+
+  getTotalPrice(): number {
+    return this.getOriginalPrice() - this.getDiscountAmount();
+  }
+
   submitForm() {
     if (!this.formData.name || !this.formData.email) {
       alert('Please fill in the required fields.');
       return;
+    }
+
+    if (this.selectedPlan !== 'FREE') {
+      const cardNum = this.cardData.number.replace(/\D/g, '');
+      const cardExp = this.cardData.expiry.replace(/\D/g, '');
+      const cardCvv = this.cardData.cvv.replace(/\D/g, '');
+      if (cardNum.length < 16 || cardExp.length < 4 || cardCvv.length < 3 || !this.cardData.name) {
+        alert('Please fill in valid credit/debit card details.');
+        return;
+      }
     }
 
     this.loading = true;
@@ -430,13 +786,30 @@ export class MembershipComponent {
       }
     });
   }
+  loadHtml2Pdf(): Promise<any> {
+    return new Promise((resolve) => {
+      if ((window as any).html2pdf) {
+        resolve((window as any).html2pdf);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.onload = () => resolve((window as any).html2pdf);
+      document.head.appendChild(script);
+    });
+  }
 
   downloadInvoice() {
     const invoiceNo = 'MEM-' + Math.random().toString(36).substring(2, 10).toUpperCase();
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
     const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    const price = this.selectedPlan === 'PREMIUM' ? '2,500.00' : '5,800.00';
+    const originalPrice = this.selectedPlan === 'PREMIUM' ? 2500 : 5800;
+    const discountAmount = (originalPrice * this.discountPercentage) / 100;
+    const finalPrice = originalPrice - discountAmount;
+    const price = finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const originalPriceFormatted = originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const discountFormatted = discountAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const planLabel = this.selectedPlan === 'PREMIUM' ? 'CinePremium (Pro)' : 'CineElite (VIP)';
     const features = this.selectedPlan === 'PREMIUM'
       ? ['4K Ultra HD + HDR Streaming', 'Ad-Free Experience', '4 Simultaneous Devices', 'Full Movie &amp; Series Library', 'Offline Downloads']
@@ -450,6 +823,14 @@ export class MembershipComponent {
         <td style="padding:8px 12px; border-bottom:1px solid #f0f0f0; text-align:right; color:#16a34a;">Included</td>
       </tr>`).join('');
 
+    const promoRow = this.appliedPromo ? `
+      <tr>
+        <td style="padding:12px; border-bottom:1px solid #f0f0f0; color:#dc2626;">
+          <span style="margin-right:8px;">🏷️</span>Discount Code: <strong>${this.appliedPromo}</strong> (${this.discountPercentage}% Off)
+        </td>
+        <td style="padding:12px; border-bottom:1px solid #f0f0f0; text-align:right; color:#dc2626; font-weight:600;">- LKR ${discountFormatted}</td>
+      </tr>` : '';
+
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -458,7 +839,7 @@ export class MembershipComponent {
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #1a1a2e; font-size: 13px; }
-    .page { max-width: 700px; margin: 30px auto; padding: 40px 50px; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+    .page { max-width: 700px; margin: 0 auto; padding: 20px 30px; border: none; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
     .logo { font-size: 26px; font-weight: 900; letter-spacing: 1px; color: #1a1a2e; }
     .logo span { color: #e67e22; }
@@ -480,11 +861,6 @@ export class MembershipComponent {
     .footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
     .footer-note { font-size: 11px; color: #999; }
     .footer-brand { font-size: 12px; font-weight: 700; color: #2563eb; }
-    @media print {
-      body { background: #fff; }
-      .page { box-shadow: none; border: none; margin: 0; border-radius: 0; }
-      @page { margin: 15mm; size: A4; }
-    }
   </style>
 </head>
 <body>
@@ -532,9 +908,10 @@ export class MembershipComponent {
           <strong>${planLabel} – Monthly Subscription</strong>
           <div style="font-size:11px;color:#666;margin-top:3px;">Billing period: ${dateStr}</div>
         </td>
-        <td style="padding:12px; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:600;">LKR ${price}</td>
+        <td style="padding:12px; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:600;">LKR ${originalPriceFormatted}</td>
       </tr>
       ${featureRows}
+      ${promoRow}
     </tbody>
     <tfoot>
       <tr class="total-row">
@@ -554,15 +931,31 @@ export class MembershipComponent {
     <div class="footer-brand">cinevault.lk</div>
   </div>
 </div>
-<script>window.onload = function(){ window.print(); }<\/script>
 </body>
 </html>`;
 
-    const win = window.open('', '_blank');
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-    }
+    this.loadHtml2Pdf().then((html2pdf) => {
+      const element = document.createElement('div');
+      element.style.position = 'absolute';
+      element.style.left = '-9999px';
+      element.style.top = '0';
+      element.style.width = '700px';
+      element.innerHTML = html;
+
+      document.body.appendChild(element);
+
+      const opt = {
+        margin:       10,
+        filename:     `CineVault_Membership_Invoice_${invoiceNo}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().from(element).set(opt).save().then(() => {
+        document.body.removeChild(element);
+      });
+    });
   }
 }
 

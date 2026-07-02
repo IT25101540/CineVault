@@ -35,5 +35,6 @@ export class AdminService {
   register(data: any): Observable<Admin> { return this.http.post<Admin>(`${this.url}/register`, data); }
   update(id: string, data: any): Observable<Admin> { return this.http.put<Admin>(`${this.url}/${id}`, data); }
   delete(id: string): Observable<any> { return this.http.delete(`${this.url}/${id}`); }
+  deletePermanent(id: string): Observable<any> { return this.http.delete(`${this.url}/${id}/permanent`); }
   activate(id: string): Observable<any> { return this.http.post(`${this.url}/${id}/activate`, {}); }
 }

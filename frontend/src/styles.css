@@ -532,8 +532,10 @@ tbody tr:hover td { background: rgba(249,115,22,0.03); }
   .kpi-grid { grid-template-columns: repeat(2,1fr); }
   .form-card { padding: 1.25rem; }
 
-  /* Tables: horizontal scroll on mobile */
+  /* Tables: horizontal scroll and optimized styling on mobile */
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  thead th { padding: 0.6rem 0.8rem; font-size: 0.68rem; }
+  tbody td { padding: 0.65rem 0.8rem; font-size: 0.8rem; }
 
   /* Search bar stacks */
   .search-bar { flex-direction: column; }

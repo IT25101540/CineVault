@@ -317,61 +317,86 @@ export class MyRentalsComponent implements OnInit {
     this.selectedRental = null;
   }
 
+  loadHtml2Pdf(): Promise<any> {
+    return new Promise((resolve) => {
+      if ((window as any).html2pdf) {
+        resolve((window as any).html2pdf);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.onload = () => resolve((window as any).html2pdf);
+      document.head.appendChild(script);
+    });
+  }
+
   downloadPDF() {
-    if (!this.selectedRental) return;
+    const rental = this.selectedRental;
+    if (!rental) return;
     const printContent = document.getElementById("invoice-print-area");
-    const WindowPrt = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
-    if (WindowPrt) {
-      WindowPrt.document.write(`
-        <html>
-          <head>
-            <title>CineVault Invoice - ${this.selectedRental.id.substring(0, 8).toUpperCase()}</title>
-            <style>
-              body { font-family: 'Outfit', 'Inter', sans-serif; padding: 40px; color: #111; background: #fff; }
-              .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-              .brand { font-size: 24px; font-weight: 800; letter-spacing: 0.05em; }
-              .brand-vault { color: #111; }
-              .brand-title { color: #e29b12; }
-              .invoice-tag h3 { font-size: 18px; font-weight: 700; color: #e29b12; margin: 0; }
-              .invoice-num { font-size: 12px; font-family: monospace; color: #666; margin: 3px 0 0 0; }
-              .divider-dashed { border-top: 1px dashed #ccc; margin: 20px 0; }
-              .invoice-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 14px; margin-bottom: 20px; }
-              .meta-lbl { display: block; font-size: 10px; font-weight: 600; color: #666; margin-bottom: 3px; letter-spacing: 0.08em; }
-              .meta-val { margin: 0; font-weight: 600; }
-              .meta-email { margin: 0; color: #666; font-size: 12px; }
-              .invoice-table-wrap { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-              .invoice-bill-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-              .invoice-bill-table th { text-align: left; font-size: 11px; font-weight: 600; color: #666; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
-              .invoice-bill-table td { padding: 10px 0 0 0; vertical-align: top; }
-              .invoice-bill-table td p { margin: 0; }
-              .font-semibold { font-weight: 600; }
-              .text-xs { font-size: 12px; }
-              .text-muted { color: #666; }
-              .text-green { color: #27ae60; }
-              .invoice-summary { display: flex; flex-direction: column; gap: 8px; font-size: 14px; margin-bottom: 20px; }
-              .summary-line { display: flex; justify-content: space-between; }
-              .total-line { border-top: 1px solid #ddd; padding-top: 10px; margin-top: 5px; }
-              .total-lbl { font-weight: 700; }
-              .total-val { font-size: 18px; font-weight: 700; color: #e29b12; }
-              .invoice-footer { text-align: center; font-size: 13px; margin-top: 40px; }
-              .thank-you { font-weight: 600; margin: 0 0 5px 0; }
-              .support-text { color: #666; margin: 0; }
-            </style>
-          </head>
-          <body>
-            ${printContent ? printContent.innerHTML : ''}
-            <script>
-              setTimeout(() => {
-                window.print();
-                window.close();
-              }, 500);
-            </script>
-          </body>
-        </html>
-      `);
-      WindowPrt.document.close();
-      WindowPrt.focus();
-    }
+    if (!printContent) return;
+
+    this.loadHtml2Pdf().then((html2pdf) => {
+      const element = document.createElement('div');
+      element.style.position = 'absolute';
+      element.style.left = '-9999px';
+      element.style.top = '0';
+      element.style.width = '700px';
+      element.style.padding = '40px';
+      element.style.background = '#ffffff';
+      element.style.color = '#111111';
+      element.style.fontFamily = "'Outfit', 'Inter', sans-serif";
+      
+      element.innerHTML = `
+        <style>
+          .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+          .brand { font-size: 24px; font-weight: 800; letter-spacing: 0.05em; }
+          .brand-vault { color: #111; }
+          .brand-title { color: #e29b12; }
+          .invoice-tag h3 { font-size: 18px; font-weight: 700; color: #e29b12; margin: 0; }
+          .invoice-num { font-size: 12px; font-family: monospace; color: #666; margin: 3px 0 0 0; }
+          .divider-dashed { border-top: 1px dashed #ccc; margin: 20px 0; }
+          .invoice-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 14px; margin-bottom: 20px; }
+          .meta-lbl { display: block; font-size: 10px; font-weight: 600; color: #666; margin-bottom: 3px; letter-spacing: 0.08em; }
+          .meta-val { margin: 0; font-weight: 600; }
+          .meta-email { margin: 0; color: #666; font-size: 12px; }
+          .invoice-table-wrap { background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+          .invoice-bill-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+          .invoice-bill-table th { text-align: left; font-size: 11px; font-weight: 600; color: #666; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+          .invoice-bill-table td { padding: 10px 0 0 0; vertical-align: top; }
+          .invoice-bill-table td p { margin: 0; }
+          .font-semibold { font-weight: 600; }
+          .text-xs { font-size: 12px; }
+          .text-muted { color: #666; }
+          .text-green { color: #27ae60; }
+          .invoice-summary { display: flex; flex-direction: column; gap: 8px; font-size: 14px; margin-bottom: 20px; }
+          .summary-line { display: flex; justify-content: space-between; }
+          .total-line { border-top: 1px solid #ddd; padding-top: 10px; margin-top: 5px; }
+          .total-lbl { font-weight: 700; }
+          .total-val { font-size: 18px; font-weight: 700; color: #e29b12; }
+          .invoice-footer { text-align: center; font-size: 13px; margin-top: 40px; }
+          .thank-you { font-weight: 600; margin: 0 0 5px 0; }
+          .support-text { color: #666; margin: 0; }
+        </style>
+        <div>
+          ${printContent.innerHTML}
+        </div>
+      `;
+
+      document.body.appendChild(element);
+
+      const opt = {
+        margin:       10,
+        filename:     `CineVault_Invoice_${rental.id.substring(0, 8).toUpperCase()}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().from(element).set(opt).save().then(() => {
+        document.body.removeChild(element);
+      });
+    });
   }
 }
 

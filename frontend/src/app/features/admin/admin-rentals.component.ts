@@ -67,8 +67,8 @@ import { Router } from '@angular/router';
                 <span class="badge badge-red"    *ngIf="r.status==='OVERDUE'">Overdue</span>
               </td>
               <td class="text-sm">{{ r.totalFee > 0 ? ('LKR ' + (r.totalFee | number:'1.2-2')) : '—' }}</td>
-              <td style="display:flex; gap:0.4rem; flex-wrap:wrap;">
-                <button class="btn btn-primary btn-sm" (click)="openEditModal(r)">Edit</button>
+              <td style="display:flex; gap:0.4rem; align-items:center; white-space:nowrap;">
+                <button class="btn btn-ghost btn-sm" (click)="openEditModal(r)">Edit</button>
                 <button class="btn btn-outline btn-sm" *ngIf="r.status==='ACTIVE' || r.status==='OVERDUE'" (click)="returnMovie(r.id)">Return</button>
                 <button class="btn btn-danger btn-sm" (click)="remove(r.id)">Remove</button>
               </td>
@@ -152,8 +152,9 @@ import { Router } from '@angular/router';
     </div>
   `,
   styles: [`
-    .admin-nav{display:flex;gap:.25rem;flex-wrap:wrap;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
-    .admin-nav a{display:flex;align-items:center;gap:.35rem;color:var(--text-muted);font-size:.875rem;font-weight:500;padding:.4rem .75rem;border-radius:var(--radius);text-decoration:none;transition:all .18s;}
+    .admin-nav{display:flex;gap:.25rem;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);scrollbar-width:none;}
+    .admin-nav::-webkit-scrollbar{display:none;}
+    .admin-nav a{display:flex;align-items:center;gap:.35rem;color:var(--text-muted);font-size:.875rem;font-weight:500;padding:.4rem .75rem;border-radius:var(--radius);text-decoration:none;transition:all .18s;white-space:nowrap;}
     .admin-nav a:hover,.admin-nav a.active{color:var(--text);background:var(--surface-2);}
 
     /* Modal styles with beautiful Glassmorphism */

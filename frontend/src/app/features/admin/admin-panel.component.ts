@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
     <div class="container">
       <div class="page-header flex-between">
         <h1>Admin Accounts</h1>
-        <button class="btn btn-primary btn-sm" (click)="showForm = !showForm">
+        <button class="btn btn-primary btn-sm" (click)="toggleCreateForm()">
           {{ showForm ? 'Cancel' : '+ New admin' }}
         </button>
       </div>
@@ -30,7 +30,7 @@ import { Router } from '@angular/router';
         <a *ngIf="hasRole(['SUPER_ADMIN', 'PERSON_ADMIN'])" routerLink="/people/add" routerLinkActive="active"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Add Person</a>
       </div>
 
-      <!-- Register form -->
+      <!-- Create form -->
       <div class="form-card mb-4" *ngIf="showForm" style="max-width:100%;">
         <h3 style="margin-bottom:1.25rem;">Register new admin</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;">
@@ -53,6 +53,7 @@ import { Router } from '@angular/router';
               <option value="USER_ADMIN">User Admin</option>
               <option value="MOVIE_ADMIN">Movie Admin</option>
               <option value="RENTAL_ADMIN">Rental Admin</option>
+              <option value="REVIEW_ADMIN">Review Admin</option>
               <option value="ADMIN_ADMIN">Admin Admin</option>
               <option value="PERSON_ADMIN">Person Admin</option>
               <option value="SUPER_ADMIN">Super Admin</option>
@@ -66,28 +67,93 @@ import { Router } from '@angular/router';
         <button class="btn btn-primary" style="margin-top:1rem;" (click)="createAdmin()">Create admin</button>
       </div>
 
+      <!-- Inline edit panel -->
+      <div class="form-card mb-4 edit-panel" *ngIf="editingAdmin">
+        <div class="flex-between" style="margin-bottom:1rem;">
+          <h3 style="margin:0;">
+            Edit &nbsp;
+            <span class="edit-username">{{ editingAdmin.username }}</span>
+          </h3>
+          <button class="btn btn-sm btn-ghost" (click)="cancelEdit()">✕ Cancel</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;">
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select class="form-control" [(ngModel)]="editForm.role">
+              <option value="MODERATOR">Moderator</option>
+              <option value="USER_ADMIN">User Admin</option>
+              <option value="MOVIE_ADMIN">Movie Admin</option>
+              <option value="RENTAL_ADMIN">Rental Admin</option>
+              <option value="REVIEW_ADMIN">Review Admin</option>
+              <option value="ADMIN_ADMIN">Admin Admin</option>
+              <option value="PERSON_ADMIN">Person Admin</option>
+              <option value="SUPER_ADMIN">Super Admin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Permission Level (1–5)</label>
+            <input type="number" class="form-control" [(ngModel)]="editForm.permissionLevel" min="1" max="5"/>
+          </div>
+        </div>
+        <div style="margin-top:1rem;display:flex;gap:.5rem;">
+          <button class="btn btn-primary btn-sm" (click)="saveEdit()">
+            ✓ &nbsp;Save changes
+          </button>
+          <button class="btn btn-sm btn-ghost" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </div>
+
       <div class="spinner-wrap" *ngIf="loading"><div class="spinner"></div></div>
+
       <div class="table-wrap" *ngIf="!loading">
         <table>
           <thead>
-            <tr><th>Username</th><th>Email</th><th>Role</th><th>Level</th><th>Status</th><th>Actions</th></tr>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Level</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let a of admins">
-              <td>{{ a.username }}</td>
+            <tr *ngFor="let a of admins" [class.editing-row]="editingAdmin?.id === a.id">
+              <td><strong>{{ a.username }}</strong></td>
               <td class="text-muted text-sm">{{ a.email }}</td>
               <td>
-                <span class="badge badge-gold" *ngIf="a.role==='SUPER_ADMIN'">Super Admin</span>
-                <span class="badge badge-gray" *ngIf="a.role!=='SUPER_ADMIN'">{{ a.role }}</span>
+                <span class="badge badge-gold" *ngIf="a.role === 'SUPER_ADMIN'">Super Admin</span>
+                <span class="badge badge-gray" *ngIf="a.role !== 'SUPER_ADMIN'">{{ a.role }}</span>
               </td>
               <td class="text-sm">{{ a.permissionLevel }}</td>
               <td>
                 <span class="badge badge-green" *ngIf="a.active">Active</span>
                 <span class="badge badge-red"   *ngIf="!a.active">Inactive</span>
               </td>
-              <td *ngIf="currentAdmin?.role === 'SUPER_ADMIN'">
-                <button class="btn btn-danger btn-sm" (click)="deactivate(a.id)" *ngIf="a.active">Deactivate</button>
-                <button class="btn btn-primary btn-sm" (click)="activate(a.id)" *ngIf="!a.active">Activate</button>
+
+              <!-- SUPER_ADMIN action buttons -->
+              <td *ngIf="currentAdmin?.role === 'SUPER_ADMIN'" class="action-cell">
+                <!-- Edit -->
+                <button class="btn btn-ghost btn-sm"
+                        (click)="startEdit(a)"
+                        [disabled]="!!editingAdmin && editingAdmin.id !== a.id">
+                  Edit
+                </button>
+
+                <!-- Activate / Deactivate -->
+                <button class="btn btn-danger btn-sm" (click)="deactivate(a.id)" *ngIf="a.active">
+                  Deactivate
+                </button>
+                <button class="btn btn-primary btn-sm" (click)="activate(a.id)" *ngIf="!a.active">
+                  Activate
+                </button>
+
+                <!-- Permanent Delete (cannot delete yourself) -->
+                <button class="btn btn-danger btn-sm"
+                        (click)="deletePermanent(a.id, a.username)"
+                        *ngIf="a.id !== currentAdmin?.id">
+                  Delete
+                </button>
               </td>
               <td *ngIf="currentAdmin?.role !== 'SUPER_ADMIN'" class="text-muted text-xs">No Access</td>
             </tr>
@@ -98,9 +164,18 @@ import { Router } from '@angular/router';
     </div>
   `,
   styles: [`
-    .admin-nav{display:flex;gap:.25rem;flex-wrap:wrap;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
-    .admin-nav a{display:flex;align-items:center;gap:.35rem;color:var(--text-muted);font-size:.875rem;font-weight:500;padding:.4rem .75rem;border-radius:var(--radius);text-decoration:none;transition:all .18s;}
+    .admin-nav{display:flex;gap:.25rem;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);scrollbar-width:none;}
+    .admin-nav::-webkit-scrollbar{display:none;}
+    .admin-nav a{display:flex;align-items:center;gap:.35rem;color:var(--text-muted);font-size:.875rem;font-weight:500;padding:.4rem .75rem;border-radius:var(--radius);text-decoration:none;transition:all .18s;white-space:nowrap;}
     .admin-nav a:hover,.admin-nav a.active{color:var(--text);background:var(--surface-2);}
+
+    /* Edit panel highlight */
+    .edit-panel{border:1px solid var(--primary,#7c3aed) !important;}
+    .edit-username{color:var(--primary,#7c3aed);font-weight:700;}
+    .editing-row{background:rgba(124,58,237,.06);}
+
+    /* Action buttons */
+    .action-cell{display:flex;gap:.3rem;align-items:center;white-space:nowrap;}
   `]
 })
 export class AdminPanelComponent implements OnInit {
@@ -110,6 +185,10 @@ export class AdminPanelComponent implements OnInit {
   currentAdmin: Admin | null = null;
   newAdmin: any = { role: 'MODERATOR', permissionLevel: 2 };
 
+  // ── Edit state ───────────────────────────────────────────────────────────
+  editingAdmin: Admin | null = null;
+  editForm: { role: string; permissionLevel: number } = { role: 'MODERATOR', permissionLevel: 2 };
+
   constructor(private adminService: AdminService, private router: Router) {}
 
   ngOnInit() {
@@ -118,7 +197,6 @@ export class AdminPanelComponent implements OnInit {
       this.router.navigate(['/admin/dashboard']);
       return;
     }
-
     this.adminService.getAll().subscribe({
       next: a => { this.admins = a; this.loading = false; },
       error: () => { this.loading = false; }
@@ -129,6 +207,12 @@ export class AdminPanelComponent implements OnInit {
     return this.currentAdmin ? roles.includes(this.currentAdmin.role) : false;
   }
 
+  toggleCreateForm() {
+    this.showForm = !this.showForm;
+    if (this.showForm) this.editingAdmin = null; // close edit if open
+  }
+
+  // ── Create ───────────────────────────────────────────────────────────────
   createAdmin() {
     this.adminService.register(this.newAdmin).subscribe(a => {
       this.admins.push(a);
@@ -137,8 +221,29 @@ export class AdminPanelComponent implements OnInit {
     });
   }
 
+  // ── Edit ─────────────────────────────────────────────────────────────────
+  startEdit(a: Admin) {
+    this.editingAdmin = a;
+    this.editForm = { role: a.role, permissionLevel: a.permissionLevel };
+    this.showForm = false;
+  }
+
+  cancelEdit() {
+    this.editingAdmin = null;
+  }
+
+  saveEdit() {
+    if (!this.editingAdmin) return;
+    const id = this.editingAdmin.id;
+    this.adminService.update(id, this.editForm).subscribe(updated => {
+      this.admins = this.admins.map(a => a.id === id ? { ...a, ...updated } : a);
+      this.editingAdmin = null;
+    });
+  }
+
+  // ── Activate / Deactivate (soft-delete) ──────────────────────────────────
   deactivate(id: string) {
-    if (confirm('Deactivate this admin?')) {
+    if (confirm('Deactivate this admin account?')) {
       this.adminService.delete(id).subscribe(() => {
         this.admins = this.admins.map(a => a.id === id ? { ...a, active: false } : a);
       });
@@ -146,9 +251,22 @@ export class AdminPanelComponent implements OnInit {
   }
 
   activate(id: string) {
-    if (confirm('Activate this admin?')) {
+    if (confirm('Activate this admin account?')) {
       this.adminService.activate(id).subscribe(() => {
         this.admins = this.admins.map(a => a.id === id ? { ...a, active: true } : a);
+      });
+    }
+  }
+
+  // ── Permanent delete (hard-delete) ────────────────────────────────────────
+  deletePermanent(id: string, username: string) {
+    const confirmed = confirm(
+      `⚠️ Permanently delete "${username}"?\n\nThis CANNOT be undone — the account will be removed from the database entirely.`
+    );
+    if (confirmed) {
+      this.adminService.deletePermanent(id).subscribe(() => {
+        this.admins = this.admins.filter(a => a.id !== id);
+        if (this.editingAdmin?.id === id) this.editingAdmin = null;
       });
     }
   }

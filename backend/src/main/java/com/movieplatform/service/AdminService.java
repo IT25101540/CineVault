@@ -14,5 +14,6 @@ public interface AdminService {
     AdminDTO update(String id, String role, int permissionLevel);
     void deactivate(String id);
     void activate(String id);
+    void deleteById(String id);
     DashboardStats getDashboardStats();
 }

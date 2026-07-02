@@ -90,6 +90,13 @@ public class AdminRestController {
         ));
     }
 
+    /** DELETE /api/admin/{id}/permanent - Permanently remove admin account from database (Hard-Delete) */
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Map<String, String>> deletePermanent(@PathVariable String id) {
+        adminService.deleteById(id);
+        return ResponseEntity.ok(Map.of("message", "Admin permanently deleted"));
+    }
+
     /** DELETE /api/admin/{id} - Deactivate administrator account to preserve associated activity logs (Soft-Delete) */
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> delete(@PathVariable String id) {

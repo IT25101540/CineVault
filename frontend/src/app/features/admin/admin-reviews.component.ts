@@ -57,10 +57,10 @@ import { Router } from '@angular/router';
                 <span class="badge badge-red"  *ngIf="r.hidden">Hidden</span>
                 <span class="badge badge-gray" *ngIf="!r.hidden">Visible</span>
               </td>
-              <td style="display:flex;gap:.4rem;flex-wrap:wrap;">
-                <button class="btn btn-primary btn-sm" (click)="openEditModal(r)">Edit</button>
-                <button *ngIf="!r.hidden" class="btn btn-outline btn-sm" (click)="hide(r.id)">Hide</button>
-                <button *ngIf="r.hidden"  class="btn btn-ghost btn-sm"   (click)="unhide(r.id)">Unhide</button>
+              <td style="display:flex;gap:.4rem;align-items:center;white-space:nowrap;">
+                <button class="btn btn-ghost btn-sm" (click)="openEditModal(r)">Edit</button>
+                <button *ngIf="!r.hidden" class="btn btn-danger btn-sm" (click)="hide(r.id)">Hide</button>
+                <button *ngIf="r.hidden"  class="btn btn-primary btn-sm" (click)="unhide(r.id)">Unhide</button>
                 <button class="btn btn-danger btn-sm" (click)="delete(r.id)">Delete</button>
               </td>
             </tr>
@@ -103,8 +103,9 @@ import { Router } from '@angular/router';
     </div>
   `,
   styles: [`
-    .admin-nav{display:flex;gap:.25rem;flex-wrap:wrap;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
-    .admin-nav a{display:flex;align-items:center;gap:.35rem;color:var(--text-muted);font-size:.875rem;font-weight:500;padding:.4rem .75rem;border-radius:var(--radius);text-decoration:none;transition:all .18s;}
+    .admin-nav{display:flex;gap:.25rem;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);scrollbar-width:none;}
+    .admin-nav::-webkit-scrollbar{display:none;}
+    .admin-nav a{display:flex;align-items:center;gap:.35rem;color:var(--text-muted);font-size:.875rem;font-weight:500;padding:.4rem .75rem;border-radius:var(--radius);text-decoration:none;transition:all .18s;white-space:nowrap;}
     .admin-nav a:hover,.admin-nav a.active{color:var(--text);background:var(--surface-2);}
 
     /* Modal styles with beautiful Glassmorphism */

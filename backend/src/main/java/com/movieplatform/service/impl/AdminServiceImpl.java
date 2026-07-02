@@ -70,6 +70,15 @@ public class AdminServiceImpl implements AdminService {
         adminRepository.save(a);
     }
 
+    @Override
+    public void deleteById(String id) {
+        // Hard-delete: permanently removes admin record from the database
+        if (!adminRepository.existsById(id)) {
+            throw new RuntimeException("Admin not found: " + id);
+        }
+        adminRepository.deleteById(id);
+    }
+
     /** Aggregates dashboard telemetry metrics across database collections */
     @Override
     public DashboardStats getDashboardStats() {
