@@ -337,10 +337,17 @@ export class MyRentalsComponent implements OnInit {
     if (!printContent) return;
 
     this.loadHtml2Pdf().then((html2pdf) => {
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'absolute';
+      wrapper.style.left = '0';
+      wrapper.style.top = '0';
+      wrapper.style.width = '100%';
+      wrapper.style.height = '0';
+      wrapper.style.overflow = 'visible';
+      wrapper.style.zIndex = '-9999';
+      wrapper.style.pointerEvents = 'none';
+
       const element = document.createElement('div');
-      element.style.position = 'absolute';
-      element.style.left = '-9999px';
-      element.style.top = '0';
       element.style.width = '700px';
       element.style.padding = '40px';
       element.style.background = '#ffffff';
@@ -383,7 +390,8 @@ export class MyRentalsComponent implements OnInit {
         </div>
       `;
 
-      document.body.appendChild(element);
+      wrapper.appendChild(element);
+      document.body.appendChild(wrapper);
 
       const opt = {
         margin:       10,
@@ -394,7 +402,7 @@ export class MyRentalsComponent implements OnInit {
       };
 
       html2pdf().from(element).set(opt).save().then(() => {
-        document.body.removeChild(element);
+        document.body.removeChild(wrapper);
       });
     });
   }

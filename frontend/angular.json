@@ -24,7 +24,7 @@
             "tsConfig": "tsconfig.json",
             "assets": ["src/favicon.ico", "src/assets"],
             "styles": ["src/styles.css"],
-            "scripts": []
+            "scripts": ["src/assets/html2pdf.bundle.min.js"]
           },
           "configurations": {
             "production": {

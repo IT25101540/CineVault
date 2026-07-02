@@ -359,8 +359,8 @@ import { UserService } from '../../core/services/user.service';
     .features-list li .material-symbols-outlined { font-size: 1.25rem; color: var(--accent); }
 
     /* Form Section */
-    .form-section { max-width: 800px; margin: 0 auto; }
-    .checkout-card { padding: 3rem; background: rgba(234, 229, 208, 0.03); border: 1px solid rgba(234, 229, 208, 0.1); border-radius: 24px; }
+    .form-section { max-width: 1050px; margin: 0 auto; }
+    .checkout-card { max-width: none; width: 100%; padding: 3rem; background: rgba(234, 229, 208, 0.03); border: 1px solid rgba(234, 229, 208, 0.1); border-radius: 24px; }
     .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
     .full-width { grid-column: span 2; }
     .back-btn { position: absolute; left: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 0.5rem; background: none; border: none; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
@@ -606,6 +606,7 @@ import { UserService } from '../../core/services/user.service';
       .package-card { padding: 1.8rem; border-radius: 20px; }
       .package-card.popular { transform: scale(1.01); margin: 0.5rem 0; }
       .checkout-card { padding: 1.5rem; border-radius: 20px; }
+      .checkout-layout { grid-template-columns: 1fr; gap: 2.5rem; }
       .grid-form { grid-template-columns: 1fr; gap: 1.2rem; }
       .full-width { grid-column: span 1; }
       .back-btn { position: relative; left: 0; top: 0; transform: none; margin-bottom: 1.5rem; display: inline-flex; width: auto; }
@@ -815,137 +816,149 @@ export class MembershipComponent {
       ? ['4K Ultra HD + HDR Streaming', 'Ad-Free Experience', '4 Simultaneous Devices', 'Full Movie &amp; Series Library', 'Offline Downloads']
       : ['Everything in CinePremium', 'Early Access to New Releases', 'Exclusive Director&#39;s Cuts', 'Priority Customer Support', 'Free Movie Rentals (included in plan)'];
 
-    const featureRows = features.map(f => `
+    const featureRowsHtml = features.map(f => `
       <tr>
-        <td style="padding:8px 12px; border-bottom:1px solid #f0f0f0;">
-          <span style="color:#2563eb;margin-right:8px;">✓</span>${f}
+        <td style="padding:8px 14px; border-bottom:1px solid #f4f4f4; font-size:12px; color:#555; background:#fafafa;">
+          <span style="color:#f97316;font-weight:800;margin-right:6px;">✓</span>${f}
         </td>
-        <td style="padding:8px 12px; border-bottom:1px solid #f0f0f0; text-align:right; color:#16a34a;">Included</td>
+        <td style="padding:8px 14px; border-bottom:1px solid #f4f4f4; text-align:right; font-size:12px; color:#15803d; font-weight:600; background:#fafafa;">Included</td>
       </tr>`).join('');
 
-    const promoRow = this.appliedPromo ? `
+    const promoRowHtml = this.appliedPromo ? `
       <tr>
-        <td style="padding:12px; border-bottom:1px solid #f0f0f0; color:#dc2626;">
-          <span style="margin-right:8px;">🏷️</span>Discount Code: <strong>${this.appliedPromo}</strong> (${this.discountPercentage}% Off)
+        <td style="padding:10px 14px; border-bottom:1px solid #f4f4f4; font-size:12px; color:#dc2626; background:#fff9f9;">
+          <span style="margin-right:6px;">🏷</span>Promo: <strong>${this.appliedPromo}</strong> (${this.discountPercentage}% off)
         </td>
-        <td style="padding:12px; border-bottom:1px solid #f0f0f0; text-align:right; color:#dc2626; font-weight:600;">- LKR ${discountFormatted}</td>
+        <td style="padding:10px 14px; border-bottom:1px solid #f4f4f4; text-align:right; font-size:12px; color:#dc2626; font-weight:700; background:#fff9f9;">- LKR ${discountFormatted}</td>
       </tr>` : '';
 
-    const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>CineVault Membership Invoice – ${invoiceNo}</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #1a1a2e; font-size: 13px; }
-    .page { max-width: 700px; margin: 0 auto; padding: 20px 30px; border: none; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
-    .logo { font-size: 26px; font-weight: 900; letter-spacing: 1px; color: #1a1a2e; }
-    .logo span { color: #e67e22; }
-    .invoice-meta { text-align: right; }
-    .invoice-meta .inv-no { font-size: 18px; font-weight: 700; color: #2563eb; }
-    .invoice-meta .inv-date { font-size: 12px; color: #666; margin-top: 4px; }
-    .divider { border: none; border-top: 2px solid #2563eb; margin: 0 0 24px 0; }
-    .bill-row { display: flex; justify-content: space-between; margin-bottom: 24px; }
-    .bill-section h3 { font-size: 11px; text-transform: uppercase; color: #999; letter-spacing: 1px; margin-bottom: 8px; }
-    .bill-section p { font-size: 14px; color: #1a1a2e; font-weight: 600; }
-    .bill-section .sub { font-size: 12px; color: #666; font-weight: 400; margin-top: 2px; }
-    .plan-badge { display: inline-block; background: linear-gradient(135deg, #1e3a5f, #2563eb); color: #fff; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    thead th { background: #f8f9ff; padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; color: #666; letter-spacing: 0.8px; border-bottom: 2px solid #e0e0e0; }
-    thead th:last-child { text-align: right; }
-    .total-row td { padding: 14px 12px; background: #f0f7ff; font-weight: 700; font-size: 15px; border-top: 2px solid #2563eb; }
-    .total-row td:last-child { text-align: right; color: #2563eb; font-size: 18px; }
-    .status-badge { display: inline-block; background: #dcfce7; color: #16a34a; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-top: 8px; }
-    .footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
-    .footer-note { font-size: 11px; color: #999; }
-    .footer-brand { font-size: 12px; font-weight: 700; color: #2563eb; }
-  </style>
-</head>
-<body>
-<div class="page">
-  <div class="header">
+    const html = `
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .iv { font-family: 'Segoe UI', Arial, sans-serif; background: #ffffff; color: #1a1a1a; width: 100%; }
+
+  /* Header */
+  .iv-header { background: #ffffff; padding: 24px 32px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #2563eb; }
+  .iv-logo-text { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: #1a1a2e; }
+  .iv-logo-text span { color: #e67e22; }
+  .iv-logo-sub { font-size: 11px; color: #999; margin-top: 3px; letter-spacing: 0; font-weight: 400; }
+  .iv-badge-wrap { text-align: right; }
+  .iv-inv-label { font-size: 18px; font-weight: 700; color: #2563eb; letter-spacing: 0; margin-bottom: 4px; }
+  .iv-inv-no { font-size: 12px; color: #555; letter-spacing: 0; }
+  .iv-inv-date { font-size: 12px; color: #555; margin-top: 3px; letter-spacing: 0; }
+
+  /* Body */
+  .iv-body { padding: 24px 32px; }
+  .iv-bill-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+  .iv-bill-section h4 { font-size: 10px; font-weight: 600; color: #999; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+  .iv-name { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 3px; }
+  .iv-detail { font-size: 12px; color: #666; margin-top: 2px; }
+  .iv-plan-pill { display: inline-block; background: linear-gradient(135deg, #1e3a5f, #2563eb); color: #fff; padding: 5px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0; text-transform: uppercase; }
+  .iv-plan-name { font-size: 12px; color: #666; margin-top: 6px; }
+  .iv-active { display: inline-block; background: #dcfce7; color: #16a34a; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0; margin-top: 6px; }
+
+  /* Table */
+  .iv-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  .iv-table thead tr { background: #f8f9ff; }
+  .iv-table thead th { padding: 10px 12px; font-size: 11px; font-weight: 600; color: #666; letter-spacing: 0; text-transform: uppercase; border-bottom: 2px solid #e0e0e0; text-align: left; }
+  .iv-table thead th:last-child { text-align: right; }
+  .iv-total-row td { padding: 14px 12px; background: #f0f7ff; font-weight: 700; font-size: 14px; border-top: 2px solid #2563eb; }
+  .iv-total-row td:last-child { text-align: right; color: #2563eb; font-size: 18px; font-weight: 800; }
+
+  /* Meta & Footer */
+  .iv-meta { padding: 12px 32px; font-size: 12px; color: #666; }
+  .iv-footer { padding: 20px 32px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .iv-footer-note { font-size: 11px; color: #999; line-height: 1.7; }
+  .iv-footer-brand { font-size: 12px; font-weight: 700; color: #2563eb; letter-spacing: 0; }
+</style>
+<div class="iv">
+  <div class="iv-header">
     <div>
-      <div class="logo">Cine<span>Vault</span></div>
-      <p style="font-size:11px;color:#999;margin-top:4px;">Premium Cinema Experience</p>
+      <div class="iv-logo-text">Cine<span>Vault</span></div>
+      <div class="iv-logo-sub">Premium Cinema Platform</div>
     </div>
-    <div class="invoice-meta">
-      <div class="inv-no">INVOICE</div>
-      <div class="inv-date"># ${invoiceNo}</div>
-      <div class="inv-date">${dateStr} at ${timeStr}</div>
-    </div>
-  </div>
-
-  <hr class="divider">
-
-  <div class="bill-row">
-    <div class="bill-section">
-      <h3>Billed To</h3>
-      <p>${this.formData.name || this.currentUser?.username || 'Member'}</p>
-      <p class="sub">${this.formData.email || this.currentUser?.email || ''}</p>
-      ${this.formData.phone ? `<p class="sub">${this.formData.phone}</p>` : ''}
-      ${this.formData.location ? `<p class="sub">${this.formData.location}</p>` : ''}
-    </div>
-    <div class="bill-section" style="text-align:right;">
-      <h3>Subscription Plan</h3>
-      <div class="plan-badge">${this.selectedPlan}</div>
-      <p class="sub" style="margin-top:8px;">${planLabel}</p>
-      <div class="status-badge">ACTIVE</div>
+    <div class="iv-badge-wrap">
+      <div class="iv-inv-label">INVOICE</div>
+      <div class="iv-inv-no"># ${invoiceNo}</div>
+      <div class="iv-inv-date">${dateStr} at ${timeStr}</div>
     </div>
   </div>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Description</th>
-        <th style="text-align:right;">Amount</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td style="padding:12px; border-bottom:1px solid #f0f0f0;">
-          <strong>${planLabel} – Monthly Subscription</strong>
-          <div style="font-size:11px;color:#666;margin-top:3px;">Billing period: ${dateStr}</div>
-        </td>
-        <td style="padding:12px; border-bottom:1px solid #f0f0f0; text-align:right; font-weight:600;">LKR ${originalPriceFormatted}</td>
-      </tr>
-      ${featureRows}
-      ${promoRow}
-    </tbody>
-    <tfoot>
-      <tr class="total-row">
-        <td>Total Amount Paid</td>
-        <td>LKR ${price}</td>
-      </tr>
-    </tfoot>
-  </table>
-
-  <p style="font-size:12px;color:#666;margin-bottom:24px;">Payment Method: Credit / Debit Card &nbsp;|&nbsp; Currency: LKR (Sri Lankan Rupee)</p>
-
-  <div class="footer">
-    <div class="footer-note">
+  <div class="iv-body">
+    <div class="iv-bill-row">
+      <div class="iv-bill-section">
+        <h4>Billed To</h4>
+        <div class="iv-name">${this.formData.name || this.currentUser?.username || 'Member'}</div>
+        <div class="iv-detail">${this.formData.email || this.currentUser?.email || ''}</div>
+        ${this.formData.phone ? `<div class="iv-detail">${this.formData.phone}</div>` : ''}
+        ${this.formData.location ? `<div class="iv-detail">${this.formData.location}</div>` : ''}
+      </div>
+      <div class="iv-bill-section" style="text-align:right;">
+        <h4>Subscription Plan</h4>
+        <div class="iv-plan-pill">${this.selectedPlan}</div>
+        <div class="iv-plan-name">${planLabel}</div>
+        <div class="iv-active">● ACTIVE</div>
+      </div>
+    </div>
+    <table class="iv-table">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th style="text-align:right;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:12px 14px; border-bottom:1px solid #ebebeb;">
+            <strong style="font-size:14px;color:#1a1a1a;">${planLabel} – Monthly Subscription</strong>
+            <div style="font-size:11px;color:#999;margin-top:3px;">Billing period: ${dateStr}</div>
+          </td>
+          <td style="padding:12px 14px; border-bottom:1px solid #ebebeb; text-align:right; font-size:14px; font-weight:700; color:#1a1a1a;">LKR ${originalPriceFormatted}</td>
+        </tr>
+        ${featureRowsHtml}
+        ${promoRowHtml}
+      </tbody>
+      <tfoot>
+        <tr class="iv-total-row">
+          <td>Total Amount Paid</td>
+          <td>LKR ${price}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  <div class="iv-meta">
+    Payment Method: Credit / Debit Card &nbsp;|&nbsp; Currency: LKR (Sri Lankan Rupee)
+  </div>
+  <div class="iv-footer">
+    <div class="iv-footer-note">
       Thank you for subscribing to CineVault.<br>
-      For support: support@cinevault.lk
+      Support: support@cinevault.lk
     </div>
-    <div class="footer-brand">cinevault.lk</div>
+    <div class="iv-footer-brand">cinevault.lk</div>
   </div>
-</div>
-</body>
-</html>`;
+</div>`;
 
     this.loadHtml2Pdf().then((html2pdf) => {
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'absolute';
+      wrapper.style.left = '0';
+      wrapper.style.top = '0';
+      wrapper.style.width = '100%';
+      wrapper.style.height = '0';
+      wrapper.style.overflow = 'visible';
+      wrapper.style.zIndex = '-9999';
+      wrapper.style.pointerEvents = 'none';
+
       const element = document.createElement('div');
-      element.style.position = 'absolute';
-      element.style.left = '-9999px';
-      element.style.top = '0';
       element.style.width = '700px';
+      element.style.background = '#ffffff';
+      element.style.color = '#111111';
       element.innerHTML = html;
 
-      document.body.appendChild(element);
+      wrapper.appendChild(element);
+      document.body.appendChild(wrapper);
 
       const opt = {
-        margin:       10,
+        margin:       0,
         filename:     `CineVault_Membership_Invoice_${invoiceNo}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
@@ -953,11 +966,10 @@ export class MembershipComponent {
       };
 
       html2pdf().from(element).set(opt).save().then(() => {
-        document.body.removeChild(element);
+        document.body.removeChild(wrapper);
       });
     });
   }
 }
-
 
 

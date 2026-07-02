@@ -571,3 +571,107 @@ tbody tr:hover td { background: rgba(249,115,22,0.03); }
   .nav-pill > li > a { min-height: 44px; display: flex; align-items: center; }
   a.footer-list-item { min-height: 44px; display: flex; align-items: center; }
 }
+
+/* ============================================================
+   🎥 CineVault Premium Fullscreen Loading Overlay
+   ============================================================ */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.loading-overlay.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: loadingContentAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.loading-logo {
+  width: 70px;
+  height: 70px;
+  color: var(--accent, #f97316);
+  filter: drop-shadow(0 0 15px rgba(249, 115, 22, 0.6));
+  animation: loadingLogoPulse 1.8s ease-in-out infinite;
+  margin-bottom: 1rem;
+}
+
+.loading-title {
+  font-family: var(--font-display, inherit);
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, #eae5d0 0%, #a1a1aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: lowercase;
+  margin: 0 0 1.5rem 0;
+}
+
+.loading-progress-container {
+  width: 140px;
+  height: 3px;
+  background: rgba(234, 229, 208, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-progress-bar {
+  width: 50px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--accent, #f97316), transparent);
+  border-radius: 4px;
+  position: absolute;
+  left: -50px;
+  animation: loadingProgressMove 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Animations */
+@keyframes loadingContentAppear {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes loadingLogoPulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 12px rgba(249, 115, 22, 0.5));
+  }
+  50% {
+    transform: scale(1.08) rotate(5deg);
+    filter: drop-shadow(0 0 25px rgba(249, 115, 22, 0.8));
+  }
+}
+
+@keyframes loadingProgressMove {
+  0% {
+    left: -50px;
+  }
+  100% {
+    left: 140px;
+  }
+}
+

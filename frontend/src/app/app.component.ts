@@ -1,5 +1,5 @@
-import { Component, HostListener } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Component, HostListener, OnInit } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UserService } from './core/services/user.service';
 import { AdminService } from './core/services/admin.service';
@@ -9,6 +9,21 @@ import { AdminService } from './core/services/admin.service';
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   template: `
+    <!-- Fullscreen Loading Overlay -->
+    <div class="loading-overlay" *ngIf="isLoading" [class.fade-out]="isFadingOut">
+      <div class="loading-content">
+        <svg class="loading-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="4" ry="4"></rect>
+          <path d="M8 2v20 M16 2v20" opacity="0.3"></path>
+          <polygon points="10 9 15 12 10 15 10 9" fill="currentColor" stroke="none"></polygon>
+        </svg>
+        <h2 class="loading-title">cinevault</h2>
+        <div class="loading-progress-container">
+          <div class="loading-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="admin-topbar" *ngIf="currentAdmin">
       <div class="admin-topbar-inner">
         <span class="badge badge-gold" style="font-size: 0.65rem;">Admin Mode</span>
@@ -365,10 +380,31 @@ import { AdminService } from './core/services/admin.service';
     }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   menuOpen = false;
+  isLoading = false;
+  isFadingOut = false;
 
   constructor(private userService: UserService, private adminService: AdminService, private router: Router) { }
+
+  ngOnInit() {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        this.isLoading = true;
+        this.isFadingOut = false;
+      } else if (
+        event instanceof NavigationEnd ||
+        event instanceof NavigationCancel ||
+        event instanceof NavigationError
+      ) {
+        this.isFadingOut = true;
+        setTimeout(() => {
+          this.isLoading = false;
+          this.isFadingOut = false;
+        }, 500); // Match fade-out CSS animation
+      }
+    });
+  }
   get currentUser() { return this.userService.currentUser; }
   get currentAdmin() { return this.adminService.currentAdmin; }
 
