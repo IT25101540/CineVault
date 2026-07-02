@@ -44,22 +44,26 @@ import { User } from '../../core/models/models';
         <!-- Edit mode -->
         <div *ngIf="editing" style="max-width:400px;">
           <div class="form-group">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-control" [(ngModel)]="editUsername"/>
+          </div>
+          <div class="form-group" style="margin-top:0.75rem;">
             <label class="form-label">Email</label>
             <input type="email" class="form-control" [(ngModel)]="editEmail"/>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-top:0.75rem;">
             <label class="form-label">New password <span class="text-muted">(leave blank to keep)</span></label>
             <input type="password" class="form-control" [(ngModel)]="editPassword" placeholder="••••••••"/>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-top:0.75rem;">
             <label class="form-label">Membership</label>
             <select class="form-control" [(ngModel)]="editMembership">
               <option value="FREE">Free</option>
               <option value="PREMIUM">Premium</option>
             </select>
           </div>
-          <div class="alert alert-success" *ngIf="saveSuccess">Profile updated!</div>
-          <div style="display:flex;gap:.75rem;">
+          <div class="alert alert-success" *ngIf="saveSuccess" style="margin-top:1rem;">Profile updated!</div>
+          <div style="display:flex;gap:.75rem;margin-top:1rem;">
             <button class="btn btn-primary" (click)="saveProfile()">Save changes</button>
             <button class="btn btn-outline" (click)="editing = false">Cancel</button>
           </div>
@@ -81,6 +85,7 @@ export class ProfileComponent implements OnInit {
   user: User | null = null;
   loading = true;
   editing = false;
+  editUsername = '';
   editEmail = '';
   editPassword = '';
   editMembership = 'FREE';
@@ -93,6 +98,7 @@ export class ProfileComponent implements OnInit {
     this.userService.getById(id).subscribe({
       next: u => {
         this.user = u;
+        this.editUsername = u.username;
         this.editEmail = u.email;
         this.editMembership = u.membershipType;
         this.loading = false;
@@ -103,11 +109,14 @@ export class ProfileComponent implements OnInit {
 
   saveProfile() {
     this.userService.update(this.user!.id, {
+      username: this.editUsername,
       email: this.editEmail,
       password: this.editPassword || undefined,
       membershipType: this.editMembership as any
     }).subscribe(u => {
       this.user = u;
+      localStorage.setItem('currentUser', JSON.stringify(u));
+      (this.userService as any).currentUserSubject.next(u);
       this.saveSuccess = true;
       this.editing = false;
       setTimeout(() => this.saveSuccess = false, 2500);
