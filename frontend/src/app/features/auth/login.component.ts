@@ -52,8 +52,54 @@ import { AdminService } from '../../core/services/admin.service';
       <div class="google-modal-card">
         <button class="google-close-btn" (click)="closeGoogleChooser()">✕</button>
 
-        <!-- Account Chooser View -->
-        <ng-container *ngIf="!showCustomGoogleForm">
+        <!-- 1. Real Google Login configuration/prompt -->
+        <ng-container *ngIf="showRealGooglePrompt">
+          <!-- Configuration / paste Client ID prompt -->
+          <div *ngIf="!googleClientId" style="width: 100%;">
+            <div class="google-header" style="text-align: left; align-items: flex-start;">
+              <h3 class="google-title" style="margin-bottom: 0.25rem;">Configure Google Login</h3>
+              <p class="google-subtitle">Enter your Google OAuth Client ID to connect real Google accounts.</p>
+            </div>
+            <div style="margin-top: 1.5rem; width: 100%;">
+              <div class="form-group">
+                <label class="form-label" style="font-size: 0.7rem;">Google Client ID</label>
+                <input type="text" class="form-control" [(ngModel)]="clientIdInput" placeholder="xxxx-xxxx.apps.googleusercontent.com" style="background: transparent; border-color: rgba(255,255,255,0.15);" (keyup.enter)="saveGoogleClientId()"/>
+              </div>
+              <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <button class="btn btn-ghost btn-sm" (click)="showRealGooglePrompt = false" style="padding-left: 0; padding-right: 0;">Back</button>
+                <button class="btn btn-primary btn-sm" (click)="saveGoogleClientId()" [disabled]="!clientIdInput">Save & Continue</button>
+              </div>
+              <p class="text-muted" style="font-size: 0.7rem; margin-top: 1rem; line-height: 1.4;">
+                * You can get a Client ID from the Google Cloud Console. Make sure <code>http://localhost:4200</code> is in your Authorized JavaScript Origins.
+              </p>
+            </div>
+          </div>
+
+          <!-- Official Google sign in button container -->
+          <div *ngIf="googleClientId" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <div class="google-header" style="margin-bottom: 1.5rem;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.5 24c0-1.61-.15-3.16-.42-4.67H24v8.87h12.62c-.54 2.87-2.16 5.31-4.6 6.96v5.79h7.42C43.79 36.86 46.5 31.06 46.5 24z"/>
+                <path fill="#FBBC05" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.98-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.42-5.79c-2.06 1.38-4.7 2.2-8.47 2.2-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              </svg>
+              <h3 class="google-title">Sign in with Google</h3>
+              <p class="google-subtitle">Real Google Sign-In is configured. Use the button below to continue.</p>
+            </div>
+            
+            <!-- Real Google Button Placeholder -->
+            <div id="real-google-btn-container" style="margin: 1rem 0; min-height: 40px; width: 100%; display: flex; justify-content: center;"></div>
+
+            <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <button class="btn btn-ghost btn-sm" (click)="showRealGooglePrompt = false" style="padding-left: 0; padding-right: 0;">Back</button>
+              <button class="btn btn-ghost btn-sm" (click)="clearGoogleClientId()" style="color: var(--danger); padding-left: 0; padding-right: 0;">Reset Client ID</button>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- 2. Account Chooser View -->
+        <ng-container *ngIf="!showCustomGoogleForm && !showRealGooglePrompt">
           <div class="google-header">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 48 48">
               <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -66,6 +112,22 @@ import { AdminService } from '../../core/services/admin.service';
           </div>
 
           <div class="google-accounts-list">
+            <!-- Real Google Authentication Button in List -->
+            <button class="google-account-item" (click)="startRealGoogleLogin()" style="border-bottom: 2px solid var(--border); background: rgba(66, 133, 244, 0.05);">
+              <div class="google-avatar-circle" style="background-color: #4285F4; display: flex; align-items: center; justify-content: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 48 48">
+                  <path fill="#fff" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#fff" d="M46.5 24c0-1.61-.15-3.16-.42-4.67H24v8.87h12.62c-.54 2.87-2.16 5.31-4.6 6.96v5.79h7.42C43.79 36.86 46.5 31.06 46.5 24z"/>
+                  <path fill="#fff" d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.98-6.19z"/>
+                  <path fill="#fff" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.42-5.79c-2.06 1.38-4.7 2.2-8.47 2.2-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
+              </div>
+              <div class="google-account-info">
+                <span class="google-account-name" style="color: #4285F4; font-weight: bold;">Sign in with Real Google Account</span>
+                <span class="google-account-email" style="color: var(--text-muted);">Use actual Gmail credentials</span>
+              </div>
+            </button>
+
             <button class="google-account-item" (click)="selectGoogleAccount('Thevindu Edits', 'thevindu.edits@gmail.com', 'usr-google-thevindu')">
               <div class="google-avatar-circle" style="background-color: #2563eb;">T</div>
               <div class="google-account-info">
@@ -302,11 +364,17 @@ export class LoginComponent {
   customGoogleEmail = '';
   customGoogleName = '';
 
+  // Real Google Sign-In state
+  showRealGooglePrompt = false;
+  googleClientId = localStorage.getItem('googleClientId') || '';
+  clientIdInput = '';
+
   constructor(private userService: UserService, private adminService: AdminService, private router: Router) {}
 
   loginWithGoogle() {
     this.showGoogleChooser = true;
     this.showCustomGoogleForm = false;
+    this.showRealGooglePrompt = false;
     this.customGoogleEmail = '';
     this.customGoogleName = '';
   }
@@ -314,12 +382,14 @@ export class LoginComponent {
   closeGoogleChooser() {
     this.showGoogleChooser = false;
     this.showCustomGoogleForm = false;
+    this.showRealGooglePrompt = false;
   }
 
   selectGoogleAccount(name: string, email: string, id: string) {
     this.loading = true;
     this.error = '';
     this.showGoogleChooser = false;
+    this.showRealGooglePrompt = false;
     setTimeout(() => {
       const mockGoogleUser = {
         id: id,
@@ -339,6 +409,78 @@ export class LoginComponent {
     if (this.customGoogleEmail && this.customGoogleName) {
       const id = 'usr-google-' + Math.random().toString(36).substring(2, 6);
       this.selectGoogleAccount(this.customGoogleName, this.customGoogleEmail, id);
+    }
+  }
+
+  startRealGoogleLogin() {
+    this.showRealGooglePrompt = true;
+    this.showCustomGoogleForm = false;
+    if (this.googleClientId) {
+      this.initRealGoogleSignIn();
+    } else {
+      this.clientIdInput = '';
+    }
+  }
+
+  saveGoogleClientId() {
+    const id = this.clientIdInput.trim();
+    if (id) {
+      this.googleClientId = id;
+      localStorage.setItem('googleClientId', id);
+      this.initRealGoogleSignIn();
+    }
+  }
+
+  clearGoogleClientId() {
+    this.googleClientId = '';
+    localStorage.removeItem('googleClientId');
+    const container = document.getElementById('real-google-btn-container');
+    if (container) container.innerHTML = '';
+  }
+
+  initRealGoogleSignIn() {
+    setTimeout(() => {
+      try {
+        const googleObj = (window as any).google;
+        if (googleObj) {
+          googleObj.accounts.id.initialize({
+            client_id: this.googleClientId,
+            callback: (response: any) => this.handleRealGoogleResponse(response)
+          });
+          googleObj.accounts.id.renderButton(
+            document.getElementById('real-google-btn-container'),
+            { theme: 'filled_blue', size: 'large', width: 280 }
+          );
+        } else {
+          console.error('Google client library not loaded yet');
+        }
+      } catch (err) {
+        console.error('Error initializing Google Sign-In:', err);
+      }
+    }, 100);
+  }
+
+  handleRealGoogleResponse(response: any) {
+    const payload = this.decodeJWT(response.credential);
+    if (payload) {
+      this.selectGoogleAccount(payload.name, payload.email, 'usr-google-' + payload.sub.substring(0, 8));
+    }
+  }
+
+  decodeJWT(token: string) {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      console.error('JWT decoding failed', e);
+      return null;
     }
   }
 
