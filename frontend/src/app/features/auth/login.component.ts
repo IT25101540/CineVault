@@ -70,7 +70,7 @@ import { AdminService } from '../../core/services/admin.service';
               <div class="google-avatar-circle" style="background-color: #2563eb;">T</div>
               <div class="google-account-info">
                 <span class="google-account-name">Thevindu Edits</span>
-                <span class="google-account-email">thevindu.edits@gmail.com</span>
+                <span class="google-account-email">thevindu.edits&#64;gmail.com</span>
               </div>
             </button>
 
@@ -78,7 +78,7 @@ import { AdminService } from '../../core/services/admin.service';
               <div class="google-avatar-circle" style="background-color: #ea580c;">I</div>
               <div class="google-account-info">
                 <span class="google-account-name">IT25101540</span>
-                <span class="google-account-email">it25101540@my.sliit.lk</span>
+                <span class="google-account-email">it25101540&#64;my.sliit.lk</span>
               </div>
             </button>
 
@@ -86,7 +86,7 @@ import { AdminService } from '../../core/services/admin.service';
               <div class="google-avatar-circle" style="background-color: #10b981;">G</div>
               <div class="google-account-info">
                 <span class="google-account-name">Guest User</span>
-                <span class="google-account-email">guest.cinevault@gmail.com</span>
+                <span class="google-account-email">guest.cinevault&#64;gmail.com</span>
               </div>
             </button>
 
