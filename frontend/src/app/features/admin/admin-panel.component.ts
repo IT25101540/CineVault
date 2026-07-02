@@ -170,9 +170,9 @@ import { Router } from '@angular/router';
     .admin-nav a:hover,.admin-nav a.active{color:var(--text);background:var(--surface-2);}
 
     /* Edit panel highlight */
-    .edit-panel{border:1px solid var(--primary,#7c3aed) !important;}
-    .edit-username{color:var(--primary,#7c3aed);font-weight:700;}
-    .editing-row{background:rgba(124,58,237,.06);}
+    .edit-panel{border:1px solid var(--accent,#f97316) !important;}
+    .edit-username{color:var(--accent,#f97316);font-weight:700;}
+    .editing-row{background:rgba(249,115,22,.06);}
 
     /* Action buttons */
     .action-cell{display:flex;gap:.3rem;align-items:center;white-space:nowrap;}
