@@ -170,7 +170,7 @@ import { Rental } from '../../core/models/models';
       letter-spacing: 0.05em;
     }
     .brand-vault {
-      color: #eae5d0;
+      color: #555555;
     }
     .brand-title {
       color: var(--accent);
@@ -185,7 +185,7 @@ import { Rental } from '../../core/models/models';
     .invoice-num {
       font-size: 0.8rem;
       font-family: monospace;
-      color: var(--text-muted);
+      color: #888888;
       margin: 0.2rem 0 0 0;
     }
     .divider-dashed {
@@ -204,15 +204,25 @@ import { Rental } from '../../core/models/models';
       font-size: 0.7rem;
       font-weight: 600;
       letter-spacing: 0.08em;
-      color: var(--text-muted);
+      color: #888888;
       margin-bottom: 0.3rem;
     }
     .meta-val {
-      color: var(--text);
+      color: #1a1a1a;
       margin: 0;
     }
     .meta-email {
       margin: 0.1rem 0 0 0;
+    }
+    /* ── Scoped overrides: force readable colors inside the white invoice box ── */
+    .invoice-box .text-muted {
+      color: #888888 !important;
+    }
+    .invoice-box .font-semibold {
+      color: #1a1a1a;
+    }
+    .invoice-box .text-xs {
+      font-size: 0.78rem;
     }
     .invoice-table-wrap {
       background: var(--surface-2);
@@ -230,11 +240,11 @@ import { Rental } from '../../core/models/models';
       text-align: left;
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--text-muted);
+      color: #888888;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #e0e0e0;
     }
     .invoice-bill-table td {
       padding: 0.75rem 0 0 0;
@@ -264,7 +274,7 @@ import { Rental } from '../../core/models/models';
     }
     .total-lbl {
       font-weight: 700;
-      color: var(--text);
+      color: #1a1a1a;
     }
     .total-val {
       font-size: 1.25rem;
@@ -277,11 +287,11 @@ import { Rental } from '../../core/models/models';
     }
     .thank-you {
       font-weight: 600;
-      color: var(--text);
+      color: #333333;
       margin: 0 0 0.25rem 0;
     }
     .support-text {
-      color: var(--text-muted);
+      color: #888888;
       margin: 0;
     }
     @keyframes fadeIn {

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MovieService } from '../../core/services/movie.service';
@@ -57,7 +57,7 @@ export interface GenreRow {
       <div class="sliders-container" *ngIf="!loading && movies.length">
         
         <!-- Trending Slider -->
-        <div class="movie-slider-section">
+        <div class="movie-slider-section reveal-section">
           <div class="slider-header">
             <h2 class="slider-title">Trending Now</h2>
             <a routerLink="/movies" class="slider-see-all">See All <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">arrow_forward</span></a>
@@ -65,7 +65,7 @@ export interface GenreRow {
           <div class="slider-wrapper">
             <button class="slider-btn left" (click)="scroll(trendingSlider, -1)"><span class="material-symbols-outlined">chevron_left</span></button>
             <div class="slider-row" #trendingSlider>
-              <div class="slider-card" *ngFor="let movie of trendingMovies">
+              <div class="slider-card scroll-reveal" #sliderCardRef *ngFor="let movie of trendingMovies; let i = index" [style.--reveal-delay]="(i * 60) + 'ms'">
                 <a [routerLink]="['/movies', movie.id]">
                   <img *ngIf="movie.posterUrl" [src]="movie.posterUrl" [alt]="movie.title" (error)="onImgError($event)"/>
                   <div *ngIf="!movie.posterUrl" class="card-img-placeholder">
@@ -79,7 +79,7 @@ export interface GenreRow {
         </div>
 
         <!-- Dynamic Genre Sliders -->
-        <div class="movie-slider-section" *ngFor="let row of genreRows; let i = index">
+        <div class="movie-slider-section reveal-section" *ngFor="let row of genreRows; let i = index">
           <div class="slider-header">
             <h2 class="slider-title">{{ row.title }}</h2>
             <a routerLink="/movies" class="slider-see-all">See All <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">arrow_forward</span></a>
@@ -87,7 +87,7 @@ export interface GenreRow {
           <div class="slider-wrapper">
             <button class="slider-btn left" (click)="scroll(genreSlider, -1)"><span class="material-symbols-outlined">chevron_left</span></button>
             <div class="slider-row" #genreSlider>
-              <div class="slider-card" *ngFor="let movie of row.movies">
+              <div class="slider-card scroll-reveal" #sliderCardRef *ngFor="let movie of row.movies; let j = index" [style.--reveal-delay]="(j * 60) + 'ms'">
                 <a [routerLink]="['/movies', movie.id]">
                   <img *ngIf="movie.posterUrl" [src]="movie.posterUrl" [alt]="movie.title" (error)="onImgError($event)"/>
                   <div *ngIf="!movie.posterUrl" class="card-img-placeholder">
@@ -112,7 +112,7 @@ export interface GenreRow {
         </div>
         
         <div class="testimonial-grid" *ngIf="recentReviews.length">
-          <div class="card testimonial-card" *ngFor="let review of recentReviews">
+          <div class="card testimonial-card scroll-reveal" #testimonialCardRef *ngFor="let review of recentReviews; let i = index" [style.--reveal-delay]="(i * 120) + 'ms'">
             <span class="material-symbols-outlined quote-icon">format_quote</span>
             <p class="testimonial-text">"{{ review.commentText }}"</p>
             <div class="stars">
@@ -143,6 +143,30 @@ export interface GenreRow {
     </div>
   `,
   styles: [`
+    /* ── Scroll Reveal Animation ── */
+    .scroll-reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition:
+        opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+      will-change: opacity, transform;
+    }
+    .scroll-reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* Section title fade-slide */
+    .reveal-section .slider-header {
+      opacity: 0;
+      transform: translateX(-18px);
+      transition: opacity 0.55s ease 0ms, transform 0.55s ease 0ms;
+    }
+    .reveal-section.section-visible .slider-header {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
     .netflix-home { background: var(--bg); min-height: 100vh; padding-bottom: 5rem; }
 
     /* ── Hero ── */
@@ -310,7 +334,7 @@ export interface GenreRow {
 
   `]
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   movies: Movie[] = [];
   recentReviews: Review[] = [];
   featuredMovie: Movie | null = null;
@@ -321,6 +345,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   heroInterval: any;
   currentHeroIndex = 0;
   heroFading = false;
+
+  @ViewChildren('sliderCardRef') sliderCards!: QueryList<ElementRef>;
+  @ViewChildren('testimonialCardRef') testimonialCards!: QueryList<ElementRef>;
+
+  private cardObserver!: IntersectionObserver;
+  private sectionObserver!: IntersectionObserver;
 
   constructor(private movieService: MovieService, private reviewService: ReviewService) {}
   
@@ -383,10 +413,53 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit() {
+    // Card observer: fade-in + slide-up each card as it enters viewport
+    this.cardObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            this.cardObserver.unobserve(entry.target); // animate once
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    // Section observer: reveal the slider-header title
+    this.sectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('section-visible');
+            this.sectionObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
+
+    // Re-run whenever QueryList changes (after *ngFor renders)
+    const observeAll = () => {
+      this.sliderCards.forEach(ref => this.cardObserver.observe(ref.nativeElement));
+      this.testimonialCards.forEach(ref => this.cardObserver.observe(ref.nativeElement));
+
+      // Observe parent sections for header reveal
+      document.querySelectorAll('.reveal-section').forEach(el => {
+        this.sectionObserver.observe(el);
+      });
+    };
+
+    this.sliderCards.changes.subscribe(() => observeAll());
+    this.testimonialCards.changes.subscribe(() => observeAll());
+    observeAll(); // run immediately in case data is already loaded
+  }
+
   ngOnDestroy() {
-    if (this.heroInterval) {
-      clearInterval(this.heroInterval);
-    }
+    if (this.heroInterval) clearInterval(this.heroInterval);
+    if (this.cardObserver) this.cardObserver.disconnect();
+    if (this.sectionObserver) this.sectionObserver.disconnect();
   }
 
   onImgError(e: Event) {
