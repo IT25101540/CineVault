@@ -2,9 +2,11 @@
 package com.movieplatform.service;
 
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,9 +17,10 @@ public class EmailNotificationService {
     private final JavaMailSender mailSender;
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd MMM yyyy");
 
-    public EmailNotificationService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public EmailNotificationService(ObjectProvider<JavaMailSender> mailSenderProvider) {
+        this.mailSender = mailSenderProvider.getIfAvailable();
     }
+
 
     /**
      * Send an HTML invoice email to the user after a successful rental.
@@ -34,6 +37,10 @@ public class EmailNotificationService {
     public void sendInvoice(String toEmail, String rentalId, double amount,
                             String movieTitle, LocalDate rentalDate, LocalDate dueDate,
                             String paymentMethod, String username) {
+        if (mailSender == null) {
+            System.err.println("[EmailService] SMTP JavaMailSender is not configured. Skipping invoice email to: " + toEmail);
+            return;
+        }
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
