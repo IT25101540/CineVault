@@ -16,14 +16,15 @@ import java.util.*;
 @RequestMapping("/api/ai")
 public class AiRestController {
 
-    @Value("${ai.gateway.url}")
+    @Value("${ai.gateway.url:}")
     private String aiGatewayUrl;
 
-    @Value("${ai.gateway.api-key}")
+    @Value("${ai.gateway.api-key:}")
     private String apiKey;
 
     @Value("${ai.gateway.model:openai/gpt-4o-mini}")
     private String model;
+
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -35,6 +36,11 @@ public class AiRestController {
     @PostMapping("/summarize")
     public ResponseEntity<Map<String, Object>> summarize(
             @RequestBody Map<String, Object> body) {
+
+        if (aiGatewayUrl == null || aiGatewayUrl.isBlank() || apiKey == null || apiKey.isBlank()) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(Map.of("error", "AI service is not configured on the backend server."));
+        }
 
         // Build review block string
         @SuppressWarnings("unchecked")
