@@ -48,6 +48,11 @@ import { Movie, Person } from '../../core/models/models';
           <input type="url" class="form-control" [(ngModel)]="form.posterUrl" placeholder="https://…"/>
         </div>
 
+        <div class="form-group">
+          <label class="form-label">Trailer URL (YouTube)</label>
+          <input type="url" class="form-control" [(ngModel)]="form.trailerUrl" placeholder="https://www.youtube.com/watch?v=..."/>
+        </div>
+
         <!-- ── Director ── -->
         <div class="section-divider">
           <span>Director</span>

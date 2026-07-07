@@ -22,6 +22,7 @@ public class Movie {
     private String synopsis;
     private String posterUrl;
     private String imdbId;   // removed final to fix MongoDB mapping
+    private String trailerUrl;
     private double averageRating;
     private String directorId;
     private List<String> actorIds = new ArrayList<>();
@@ -61,6 +62,8 @@ public class Movie {
     public void setSynopsis(String synopsis) { this.synopsis = synopsis; }
     public String getPosterUrl() { return posterUrl; }
     public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
+    public String getTrailerUrl() { return trailerUrl; }
+    public void setTrailerUrl(String trailerUrl) { this.trailerUrl = trailerUrl; }
     public String getImdbId() { return imdbId; }
     public double getAverageRating() { return averageRating; }
     public void setAverageRating(double averageRating) { this.averageRating = averageRating; }

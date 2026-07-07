@@ -28,6 +28,7 @@ public class MovieServiceImpl implements MovieService {
         Movie m = new Movie(null, dto.getTitle(), dto.getGenre(),
                             dto.getReleaseYear(), dto.getSynopsis(), dto.getPosterUrl(),
                             UUID.randomUUID().toString().substring(0, 8), dto.getDirectorId());
+        m.setTrailerUrl(dto.getTrailerUrl());
         if (dto.getActorIds() != null) m.setActorIds(dto.getActorIds());
         movieRepository.save(m);
         return toDTO(m);
@@ -51,6 +52,7 @@ public class MovieServiceImpl implements MovieService {
         if (dto.getTitle() != null) m.setTitle(dto.getTitle());
         if (dto.getSynopsis() != null) m.setSynopsis(dto.getSynopsis());
         if (dto.getPosterUrl() != null) m.setPosterUrl(dto.getPosterUrl());
+        if (dto.getTrailerUrl() != null) m.setTrailerUrl(dto.getTrailerUrl());
         if (dto.getDirectorId() != null) m.setDirectorId(dto.getDirectorId());
         if (dto.getActorIds() != null) m.setActorIds(dto.getActorIds());
         m.setAvailable(dto.isAvailable());
@@ -65,7 +67,8 @@ public class MovieServiceImpl implements MovieService {
         MovieDTO dto = new MovieDTO();
         dto.setId(m.getId()); dto.setTitle(m.getTitle()); dto.setGenre(m.getGenre());
         dto.setReleaseYear(m.getReleaseYear()); dto.setSynopsis(m.getSynopsis());
-        dto.setPosterUrl(m.getPosterUrl()); dto.setAverageRating(m.getAverageRating());
+        dto.setPosterUrl(m.getPosterUrl()); dto.setTrailerUrl(m.getTrailerUrl());
+        dto.setAverageRating(m.getAverageRating());
         dto.setDirectorId(m.getDirectorId()); dto.setActorIds(m.getActorIds());
         dto.setAvailable(m.isAvailable());
         return dto;

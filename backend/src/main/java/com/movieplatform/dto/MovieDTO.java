@@ -10,6 +10,7 @@ public class MovieDTO {
     private int releaseYear;
     private String synopsis;
     private String posterUrl;
+    private String trailerUrl;
     private double averageRating;
     private String directorId;
     private List<String> actorIds;
@@ -30,6 +31,8 @@ public class MovieDTO {
     public void setSynopsis(String synopsis) { this.synopsis = synopsis; }
     public String getPosterUrl() { return posterUrl; }
     public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
+    public String getTrailerUrl() { return trailerUrl; }
+    public void setTrailerUrl(String trailerUrl) { this.trailerUrl = trailerUrl; }
     public double getAverageRating() { return averageRating; }
     public void setAverageRating(double averageRating) { this.averageRating = averageRating; }
     public String getDirectorId() { return directorId; }
