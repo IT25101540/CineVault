@@ -14,7 +14,10 @@ interface BoardEntry { rank: number; name: string; score: number; badge: string;
     <div class="container lb-wrap">
       <div class="lb-header">
         <p class="eyebrow">Community</p>
-        <h1>🏆 Leaderboard</h1>
+        <h1 style="display:flex;align-items:center;justify-content:center;gap:.5rem;">
+          <span class="material-symbols-outlined" style="font-size:2.2rem;color:var(--accent);">trophy</span>
+          Leaderboard
+        </h1>
         <p class="text-muted text-sm">Top contributors in the CineVault community</p>
       </div>
 
@@ -25,42 +28,48 @@ interface BoardEntry { rank: number; name: string; score: number; badge: string;
         <!-- ── TOP REVIEWERS ── -->
         <div class="lb-card">
           <div class="lb-card-header">
-            <span class="lb-icon">⭐</span>
+            <span class="material-symbols-outlined lb-icon" style="color:#facc15;">star</span>
             <h2>Top Reviewers</h2>
             <span class="lb-sub">Most reviews written</span>
           </div>
           <div class="lb-list">
             <div class="lb-row" *ngFor="let e of topReviewers"
                  [class.top1]="e.rank===1" [class.top2]="e.rank===2" [class.top3]="e.rank===3">
-              <span class="rank-badge">{{ e.badge }}</span>
+              <span class="rank-badge" [ngClass]="e.rank <= 3 ? 'rank-' + e.rank : 'rank-other'">
+                <span class="material-symbols-outlined" *ngIf="e.rank <= 3">military_tech</span>
+                <span *ngIf="e.rank > 3">#{{ e.rank }}</span>
+              </span>
               <div class="lb-name">{{ e.name }}</div>
               <div class="lb-score">
                 <span class="score-num">{{ e.score }}</span>
                 <span class="score-label">reviews</span>
               </div>
             </div>
-            <p *ngIf="!topReviewers.length" class="text-muted text-sm" style="padding:1rem 0;">No data yet.</p>
+            <p *ngIf="!topReviewers.length" class="text-muted text-sm" style="padding:1rem 0;text-align:center;">No data yet.</p>
           </div>
         </div>
 
         <!-- ── TOP RENTERS ── -->
         <div class="lb-card">
           <div class="lb-card-header">
-            <span class="lb-icon">🎬</span>
+            <span class="material-symbols-outlined lb-icon" style="color:#a78bfa;">movie</span>
             <h2>Top Renters</h2>
-            <span class="lb-sub">Most movies watched</span>
+            <span class="lb-sub">Most movies rented</span>
           </div>
           <div class="lb-list">
             <div class="lb-row" *ngFor="let e of topRenters"
                  [class.top1]="e.rank===1" [class.top2]="e.rank===2" [class.top3]="e.rank===3">
-              <span class="rank-badge">{{ e.badge }}</span>
+              <span class="rank-badge" [ngClass]="e.rank <= 3 ? 'rank-' + e.rank : 'rank-other'">
+                <span class="material-symbols-outlined" *ngIf="e.rank <= 3">military_tech</span>
+                <span *ngIf="e.rank > 3">#{{ e.rank }}</span>
+              </span>
               <div class="lb-name">{{ e.name }}</div>
               <div class="lb-score">
                 <span class="score-num">{{ e.score }}</span>
                 <span class="score-label">rentals</span>
               </div>
             </div>
-            <p *ngIf="!topRenters.length" class="text-muted text-sm" style="padding:1rem 0;">No data yet.</p>
+            <p *ngIf="!topRenters.length" class="text-muted text-sm" style="padding:1rem 0;text-align:center;">No data yet.</p>
           </div>
         </div>
 
@@ -83,7 +92,7 @@ interface BoardEntry { rank: number; name: string; score: number; badge: string;
       padding:1.25rem 1.5rem;background:linear-gradient(135deg,rgba(249,115,22,.08),rgba(124,58,237,.06));
       border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.65rem;
     }
-    .lb-icon { font-size:1.4rem; }
+    .lb-icon { font-size:1.3rem; }
     .lb-card-header h2 { font-size:1rem;font-weight:700;margin:0;flex:1; }
     .lb-sub { font-size:.72rem;color:var(--text-muted); }
 
@@ -100,7 +109,16 @@ interface BoardEntry { rank: number; name: string; score: number; badge: string;
     .top2 { background:linear-gradient(90deg,rgba(203,213,225,.04),transparent); }
     .top3 { background:linear-gradient(90deg,rgba(217,119,6,.04),transparent); }
 
-    .rank-badge { font-size:1.3rem;min-width:28px;text-align:center; }
+    /* Rank badges */
+    .rank-badge {
+      min-width:32px;display:inline-flex;align-items:center;justify-content:center;
+    }
+    .rank-badge .material-symbols-outlined { font-size:1.6rem; }
+    .rank-1 { color: #f59e0b; } /* Gold */
+    .rank-2 { color: #94a3b8; } /* Silver */
+    .rank-3 { color: #b45309; } /* Bronze */
+    .rank-other { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); }
+
     .lb-name { flex:1;font-size:.9rem;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
     .lb-score { text-align:right; }
     .score-num { font-size:1.1rem;font-weight:800;color:var(--accent);display:block; }
@@ -151,7 +169,6 @@ export class LeaderboardComponent implements OnInit {
   }
 
   private toBoard(map: Record<string, number>): BoardEntry[] {
-    const medals = ['🥇','🥈','🥉'];
     return Object.entries(map)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10)
@@ -159,7 +176,7 @@ export class LeaderboardComponent implements OnInit {
         rank:  i + 1,
         name,
         score,
-        badge: medals[i] ?? `#${i + 1}`
+        badge: '' // badge string is unused now
       }));
   }
 }
