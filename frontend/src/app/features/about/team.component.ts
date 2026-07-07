@@ -72,7 +72,7 @@ import { CommonModule } from '@angular/common';
               <span class="it-number">IT25101540</span>
             </div>
           </div>
-          <h5 class="component-name">Admin Dashboard <span style="color:#4caf50;font-size:1.1rem">☑</span></h5>
+          <h5 class="component-name">Admin Dashboard <span class="material-symbols-outlined" style="font-size:1.1rem;color:#4caf50;vertical-align:middle;margin-left:4px;">check_box</span></h5>
           <p class="component-desc">Manage admin accounts, view activity logs & platform-wide controls.</p>
           <div class="crud-tags">
             <span class="tag-create">Create</span>

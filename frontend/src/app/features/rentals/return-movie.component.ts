@@ -28,7 +28,8 @@ import { Rental } from '../../core/models/models';
             </div>
           </div>
           <div class="alert alert-error" *ngIf="rental.daysOverdue > 0" style="margin-top:1rem;margin-bottom:0;">
-            ⚠ {{ rental.daysOverdue }} day(s) overdue — late fee applies
+            <span class="material-symbols-outlined" style="font-size:1.1rem;vertical-align:middle;margin-right:4px;">warning</span>
+            {{ rental.daysOverdue }} day(s) overdue — late fee applies
           </div>
         </div>
 

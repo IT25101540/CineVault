@@ -261,7 +261,7 @@ export class AdminPanelComponent implements OnInit {
   // ── Permanent delete (hard-delete) ────────────────────────────────────────
   deletePermanent(id: string, username: string) {
     const confirmed = confirm(
-      `⚠️ Permanently delete "${username}"?\n\nThis CANNOT be undone — the account will be removed from the database entirely.`
+      `WARNING: Permanently delete "${username}"?\n\nThis CANNOT be undone — the account will be removed from the database entirely.`
     );
     if (confirmed) {
       this.adminService.deletePermanent(id).subscribe(() => {

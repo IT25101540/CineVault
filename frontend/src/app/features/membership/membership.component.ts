@@ -890,7 +890,7 @@ export class MembershipComponent {
     const promoRowHtml = this.appliedPromo ? `
       <tr>
         <td style="padding:10px 14px; border-bottom:1px solid #f4f4f4; font-size:12px; color:#dc2626; background:#fff9f9;">
-          <span style="margin-right:6px;">🏷</span>Promo: <strong>${this.appliedPromo}</strong> (${this.discountPercentage}% off)
+          Promo Code: <strong>${this.appliedPromo}</strong> (${this.discountPercentage}% off)
         </td>
         <td style="padding:10px 14px; border-bottom:1px solid #f4f4f4; text-align:right; font-size:12px; color:#dc2626; font-weight:700; background:#fff9f9;">- LKR ${discountFormatted}</td>
       </tr>` : '';
