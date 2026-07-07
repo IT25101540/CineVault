@@ -28,6 +28,12 @@ export const routes: Routes = [
   // Watchlist
   { path: 'watchlist', loadComponent: () => import('./features/watchlist/watchlist.component').then(m => m.WatchlistComponent) },
 
+  // User Dashboard
+  { path: 'dashboard', canActivate: [authGuard], loadComponent: () => import('./features/rentals/user-dashboard.component').then(m => m.UserDashboardComponent) },
+
+  // Leaderboard
+  { path: 'leaderboard', loadComponent: () => import('./features/home/leaderboard.component').then(m => m.LeaderboardComponent) },
+
   // People
   { path: 'people',        canActivate: [authGuard], loadComponent: () => import('./features/people/people-list.component').then(m => m.PeopleListComponent) },
   { path: 'people/add',    canActivate: [authGuard], loadComponent: () => import('./features/people/person-form.component').then(m => m.PersonFormComponent) },

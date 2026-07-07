@@ -1,0 +1,45 @@
+# ============================================================
+# SE1020 Movie Platform – REST API Configuration (SOA)
+# Copy this file to application.properties and fill in values
+# ============================================================
+
+# Server
+server.port=7000
+server.servlet.context-path=/
+
+# MongoDB Configuration
+spring.data.mongodb.uri=mongodb+srv://USERNAME:PASSWORD@cluster.mongodb.net/cinevault?retryWrites=true&w=majority
+
+# Embedded Tomcat
+server.tomcat.max-threads=200
+server.tomcat.connection-timeout=5000
+
+# CORS – Angular dev server
+app.cors.allowed-origins=http://localhost:4200
+
+# Jackson
+spring.jackson.serialization.write-dates-as-timestamps=false
+spring.jackson.time-zone=UTC
+
+# Seed data into MongoDB on first run
+app.seed.enabled=true
+
+# ============================================================
+# Gmail SMTP – Invoice Email
+# Get App Password: myaccount.google.com/apppasswords
+# ============================================================
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=YOUR_GMAIL@gmail.com
+spring.mail.password=YOUR_APP_PASSWORD
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+
+# ============================================================
+# Vercel AI Gateway – Review Summarizer
+# Get key: vercel.com/dashboard → AI Gateway
+# ============================================================
+ai.gateway.url=https://ai-gateway.vercel.sh/v1/chat/completions
+ai.gateway.api-key=YOUR_VERCEL_AI_GATEWAY_KEY
+ai.gateway.model=openai/gpt-4o-mini

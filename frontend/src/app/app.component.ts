@@ -55,6 +55,7 @@ import { AdminService } from './core/services/admin.service';
         <li><a routerLink="/movies" routerLinkActive="active">Movies</a></li>
         <li><a routerLink="/people" routerLinkActive="active">People</a></li>
         <li><a routerLink="/membership" routerLinkActive="active">Membership</a></li>
+        <li><a routerLink="/leaderboard" routerLinkActive="active">Leaderboard</a></li>
         <li><a routerLink="/about" routerLinkActive="active">About</a></li>
       </ul>
 
@@ -70,6 +71,12 @@ import { AdminService } from './core/services/admin.service';
             <span class="membership-badge" *ngIf="currentUser.membershipType && currentUser.membershipType !== 'FREE'">
               {{ currentUser.membershipType }}
             </span>
+          </a>
+        </li>
+        <li *ngIf="currentUser">
+          <a routerLink="/dashboard" class="user-link" style="background:rgba(249,115,22,.1);border-radius:999px;padding:.3rem .8rem;">
+            <span class="material-symbols-outlined" style="font-size:1rem;margin-right:3px;">dashboard</span>
+            Dashboard
           </a>
         </li>
         <li *ngIf="currentUser">
@@ -96,7 +103,9 @@ import { AdminService } from './core/services/admin.service';
         <li><a routerLink="/movies" routerLinkActive="active" (click)="closeMenu()">Movies</a></li>
         <li><a routerLink="/people" routerLinkActive="active" (click)="closeMenu()">People</a></li>
         <li><a routerLink="/membership" routerLinkActive="active" (click)="closeMenu()">Membership</a></li>
+        <li><a routerLink="/leaderboard" routerLinkActive="active" (click)="closeMenu()">Leaderboard</a></li>
         <li><a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">About</a></li>
+        <li *ngIf="currentUser"><a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()">My Dashboard</a></li>
       </ul>
       <div class="mobile-nav-actions">
         <ng-container *ngIf="!currentUser && !currentAdmin">
