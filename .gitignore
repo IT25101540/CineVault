@@ -36,6 +36,3 @@ dist/
 # Temp
 tmp/
 temp/
-
-# Secrets – never commit real credentials
-backend/src/main/resources/application.properties
