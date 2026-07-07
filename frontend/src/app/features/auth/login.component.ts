@@ -49,6 +49,37 @@ import { AdminService } from '../../core/services/admin.service';
 
     <!-- Google Account Chooser Modal Overlay -->
     <!-- Google Client ID Configuration Modal Overlay -->
+    <div class="google-modal-overlay" *ngIf="showGoogleDetailsModal">
+      <div class="google-modal-card">
+        <button class="google-close-btn" (click)="showGoogleDetailsModal = false; loading = false;">✕</button>
+        <div style="width: 100%;">
+          <div class="google-header" style="text-align: left; align-items: flex-start; margin-bottom: 1.5rem;">
+            <h3 class="google-title" style="margin-top: 0; margin-bottom: 0.25rem;">Complete Google Sign-In</h3>
+            <p class="google-subtitle">Please enter a Username and Password to connect your Google account.</p>
+          </div>
+          <div class="alert alert-error" *ngIf="modalError" style="margin-bottom: 1rem;">{{ modalError }}</div>
+          <div>
+            <div class="form-group">
+              <label class="form-label" style="font-size: 0.7rem;">Email (Google)</label>
+              <input type="text" class="form-control" [value]="googleEmail" disabled style="opacity: 0.65; background: rgba(255,255,255,0.05);"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-size: 0.7rem;">Username</label>
+              <input type="text" class="form-control" [(ngModel)]="googleUsernameInput" placeholder="Choose a username"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-size: 0.7rem;">Password</label>
+              <input type="password" class="form-control" [(ngModel)]="googlePasswordInput" placeholder="••••••••" (keyup.enter)="submitGoogleDetails()"/>
+            </div>
+            <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <button class="btn btn-ghost btn-sm" (click)="showGoogleDetailsModal = false; loading = false;" style="padding-left: 0; padding-right: 0;">Cancel</button>
+              <button class="btn btn-primary btn-sm" (click)="submitGoogleDetails()" [disabled]="!googleUsernameInput || !googlePasswordInput">Sign In</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="google-modal-overlay" *ngIf="showGoogleChooser">
       <div class="google-modal-card">
         <button class="google-close-btn" (click)="closeGoogleChooser()">✕</button>
@@ -303,6 +334,16 @@ export class LoginComponent implements OnInit {
   googleClientId = localStorage.getItem('googleClientId') || '';
   clientIdInput = '';
 
+  // Google credentials modal state
+  showGoogleDetailsModal = false;
+  googleEmail = '';
+  googleName = '';
+  googleId = '';
+  googleUsernameInput = '';
+  googlePasswordInput = '';
+  modalError = '';
+
+
   constructor(private userService: UserService, private adminService: AdminService, private router: Router) {}
 
   ngOnInit() {
@@ -414,53 +455,62 @@ export class LoginComponent implements OnInit {
   }
 
   selectGoogleAccount(name: string, email: string, id: string) {
+    this.googleName = name;
+    this.googleEmail = email;
+    this.googleId = id;
+    this.googleUsernameInput = name.replace(/\s+/g, '').toLowerCase();
+    this.googlePasswordInput = '';
+    this.modalError = '';
+    this.showGoogleDetailsModal = true;
+    this.loading = false;
+  }
+
+  submitGoogleDetails() {
+    if (!this.googleUsernameInput || !this.googlePasswordInput) {
+      this.modalError = 'Please fill in all fields.';
+      return;
+    }
     this.loading = true;
-    this.error = '';
-    
-    const googlePassword = 'GoogleUserSecretPass123!';
-    
-    // First try logging in with the email as username
-    this.userService.login(email, googlePassword).subscribe({
-      next: (user) => {
-        this.loading = false;
-        this.router.navigate(['/movies']);
-      },
-      error: (loginErr) => {
-        // If login fails, register the user in the database
-        this.userService.register(email, email, googlePassword, 'FREE').subscribe({
-          next: (registeredUser) => {
-            // After successful registration, log them in
-            this.userService.login(email, googlePassword).subscribe({
-              next: (loggedInUser) => {
-                this.loading = false;
-                this.router.navigate(['/movies']);
-              },
-              error: (err) => {
-                console.error('Login after registration failed:', err);
-                this.error = 'Login failed after registration.';
-                this.loading = false;
-              }
-            });
-          },
-          error: (regErr) => {
-            console.error('Registration failed:', regErr);
-            // Fallback to mock user if backend fails
-            const mockGoogleUser = {
-              id: id,
-              username: name.replace(/\s+/g, ''),
-              email: email,
-              membershipType: 'FREE',
-              active: true
-            };
-            localStorage.setItem('currentUser', JSON.stringify(mockGoogleUser));
-            (this.userService as any).currentUserSubject.next(mockGoogleUser);
+    this.modalError = '';
+
+    const username = this.googleUsernameInput.trim();
+    const password = this.googlePasswordInput;
+
+    // First try registering the user
+    this.userService.register(username, this.googleEmail, password, 'FREE').subscribe({
+      next: (registeredUser) => {
+        // Registration success, log them in
+        this.userService.login(username, password).subscribe({
+          next: (loggedInUser) => {
             this.loading = false;
+            this.showGoogleDetailsModal = false;
             this.router.navigate(['/movies']);
+          },
+          error: (err) => {
+            console.error('Login after registration failed:', err);
+            this.modalError = 'Login failed after registration.';
+            this.loading = false;
+          }
+        });
+      },
+      error: (regErr) => {
+        // If registration failed (e.g. username taken), try logging in to see if it's their existing account
+        this.userService.login(username, password).subscribe({
+          next: (loggedInUser) => {
+            this.loading = false;
+            this.showGoogleDetailsModal = false;
+            this.router.navigate(['/movies']);
+          },
+          error: (loginErr) => {
+            console.error('Login attempt failed:', loginErr);
+            this.modalError = regErr.error?.error || 'Username is already taken or invalid password.';
+            this.loading = false;
           }
         });
       }
     });
   }
+
 
   login() {
     if (!this.username || !this.password) { this.error = 'Please fill in all fields.'; return; }
