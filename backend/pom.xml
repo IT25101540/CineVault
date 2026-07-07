@@ -51,6 +51,12 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Spring Mail (JavaMailSender – Gmail SMTP) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
+
     <!-- CRaC API: resolves CRaCMXBean reference inside SpringApplication (optional) -->
     <dependency>
       <groupId>org.crac</groupId>

@@ -75,8 +75,21 @@ public class RentalServiceImpl implements RentalService {
         rentalRepository.save(r);
         
         // Send email receipt
+        String movieTitleForEmail = movieRepository.findById(movieId)
+                .map(m -> m.getTitle())
+                .orElse("CineVault Movie");
+
         userOpt.ifPresent(u -> {
-            emailService.sendInvoice(u.getEmail(), r.getId(), finalFee);
+            emailService.sendInvoice(
+                    u.getEmail(),
+                    r.getId(),
+                    finalFee,
+                    movieTitleForEmail,
+                    r.getRentalDate(),
+                    r.getDueDate(),
+                    r.getPaymentMethod(),
+                    u.getUsername() != null ? u.getUsername() : u.getEmail()
+            );
         });
 
         return toDTO(r);

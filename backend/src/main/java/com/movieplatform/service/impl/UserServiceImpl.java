@@ -96,7 +96,20 @@ public class UserServiceImpl implements UserService {
             // Only process payment and send invoice if upgrading to a paid tier
             if (price > 0.0) {
                 paymentService.processPayment(user.getId(), price, "Membership Billing");
-                emailService.sendInvoice(user.getEmail(), "SUB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(), price);
+                String invoiceId = "SUB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                String planName  = "PREMIUM".equalsIgnoreCase(membershipType) ? "CinePremium" : "CineElite";
+                java.time.LocalDate today    = java.time.LocalDate.now();
+                java.time.LocalDate nextMonth = today.plusMonths(1);
+                emailService.sendInvoice(
+                        user.getEmail(),
+                        invoiceId,
+                        price,
+                        planName + " – Monthly Membership",
+                        today,
+                        nextMonth,
+                        "Membership Billing",
+                        user.getUsername() != null ? user.getUsername() : user.getEmail()
+                );
             }
         }
         
