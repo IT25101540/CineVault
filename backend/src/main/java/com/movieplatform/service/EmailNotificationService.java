@@ -197,5 +197,6 @@ public class EmailNotificationService {
             // Email failure must NOT block the rental transaction
             System.err.println("[EmailService] Failed to send invoice email to " + toEmail + ": " + ex.getMessage());
         }
+        });
     }
 }
