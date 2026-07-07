@@ -41,23 +41,24 @@ public class EmailNotificationService {
             System.err.println("[EmailService] SMTP JavaMailSender is not configured. Skipping invoice email to: " + toEmail);
             return;
         }
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom("CineVault <finance.cinevault@gmail.com>");
-            helper.setTo(toEmail);
-            helper.setSubject("Your CineVault Invoice #" + rentalId.substring(0, 8).toUpperCase());
+                helper.setFrom("CineVault <finance.cinevault@gmail.com>");
+                helper.setTo(toEmail);
+                helper.setSubject("Your CineVault Invoice #" + rentalId.substring(0, 8).toUpperCase());
 
-            String invoiceNo = "#" + rentalId.substring(0, 8).toUpperCase();
-            String rentalDateStr  = rentalDate  != null ? rentalDate.format(FMT)  : "-";
-            String dueDateStr     = dueDate     != null ? dueDate.format(FMT)     : "-";
-            String amountStr      = String.format("LKR %,.2f", amount);
-            String descLine       = (movieTitle != null && !movieTitle.isBlank())
-                    ? "7-day CineVault stream license – " + movieTitle
-                    : "7-day CineVault stream license";
+                String invoiceNo = "#" + rentalId.substring(0, 8).toUpperCase();
+                String rentalDateStr  = rentalDate  != null ? rentalDate.format(FMT)  : "-";
+                String dueDateStr     = dueDate     != null ? dueDate.format(FMT)     : "-";
+                String amountStr      = String.format("LKR %,.2f", amount);
+                String descLine       = (movieTitle != null && !movieTitle.isBlank())
+                        ? "7-day CineVault stream license – " + movieTitle
+                        : "7-day CineVault stream license";
 
-            String html = """
+                String html = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -71,8 +72,6 @@ public class EmailNotificationService {
       <td align="center">
         <table width="560" cellpadding="0" cellspacing="0"
                style="background:#1a1a1a;border-radius:16px;border:1px solid #2a2a2a;overflow:hidden;">
-
-          <!-- ── HEADER ── -->
           <tr>
             <td style="padding:32px 40px 0;">
               <table width="100%%" cellpadding="0" cellspacing="0">
