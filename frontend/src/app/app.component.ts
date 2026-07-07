@@ -3,6 +3,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationStart, Na
 import { CommonModule } from '@angular/common';
 import { UserService } from './core/services/user.service';
 import { AdminService } from './core/services/admin.service';
+import { RentalService } from './core/services/rental.service';
 
 @Component({
   selector: 'app-root',
@@ -79,6 +80,33 @@ import { AdminService } from './core/services/admin.service';
             Dashboard
           </a>
         </li>
+
+        <!-- 🔔 Notification Bell -->
+        <li *ngIf="currentUser" style="position:relative;">
+          <button class="notif-bell" (click)="toggleNotif()">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+          </button>
+          <!-- Dropdown -->
+          <div class="notif-dropdown" *ngIf="notifOpen">
+            <div class="notif-header">
+              <span>Notifications</span>
+              <button class="notif-clear" (click)="clearNotifs()">Clear all</button>
+            </div>
+            <div class="notif-item" *ngFor="let n of notifications" [ngClass]="'notif-' + n.type">
+              <span class="material-symbols-outlined notif-icon">{{ n.icon }}</span>
+              <div>
+                <p class="notif-title">{{ n.title }}</p>
+                <p class="notif-msg">{{ n.message }}</p>
+              </div>
+            </div>
+            <div class="notif-empty" *ngIf="!notifications.length">
+              <span class="material-symbols-outlined">check_circle</span>
+              <p>All caught up!</p>
+            </div>
+          </div>
+        </li>
+
         <li *ngIf="currentUser">
           <a (click)="logout()" style="cursor:pointer;" class="text-muted text-sm">Sign out</a>
         </li>
@@ -387,20 +415,80 @@ import { AdminService } from './core/services/admin.service';
       .footer-bottom .flex-between { flex-direction: column; text-align: center; justify-content: center; align-items: center; gap: 1rem; }
       .copyright-stack { align-items: center; text-align: center; }
     }
+
+    /* ── Notification Bell ── */
+    .notif-bell {
+      position:relative;background:none;border:none;cursor:pointer;
+      color:var(--text-muted);padding:.4rem;border-radius:50%;
+      transition:all .2s;display:flex;align-items:center;
+    }
+    .notif-bell:hover { color:var(--text);background:var(--surface-2); }
+    .notif-bell .material-symbols-outlined { font-size:1.3rem; }
+    .notif-badge {
+      position:absolute;top:2px;right:2px;
+      background:var(--accent);color:#000;font-size:.6rem;font-weight:800;
+      border-radius:999px;min-width:16px;height:16px;line-height:16px;
+      text-align:center;padding:0 3px;
+      animation:pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+    .notif-dropdown {
+      position:absolute;right:0;top:calc(100% + 8px);width:300px;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius-lg);box-shadow:0 8px 32px rgba(0,0,0,.5);
+      z-index:1000;overflow:hidden;
+      animation:dropIn .2s ease;
+    }
+    @keyframes dropIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }
+    .notif-header {
+      display:flex;justify-content:space-between;align-items:center;
+      padding:.75rem 1rem;border-bottom:1px solid var(--border);
+      font-size:.85rem;font-weight:700;color:var(--text);
+    }
+    .notif-clear { background:none;border:none;font-size:.75rem;color:var(--accent);cursor:pointer; }
+    .notif-item {
+      display:flex;gap:.75rem;align-items:flex-start;
+      padding:.85rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);
+      transition:background .15s;
+    }
+    .notif-item:hover { background:rgba(255,255,255,.03); }
+    .notif-icon { font-size:1.1rem;margin-top:1px;flex-shrink:0; }
+    .notif-warning .notif-icon { color:#f87171; }
+    .notif-info    .notif-icon { color:#60a5fa; }
+    .notif-success .notif-icon { color:#4ade80; }
+    .notif-title { font-size:.82rem;font-weight:600;color:var(--text);margin:0; }
+    .notif-msg   { font-size:.75rem;color:var(--text-muted);margin:.15rem 0 0; }
+    .notif-empty {
+      padding:1.5rem;text-align:center;
+      color:var(--text-muted);font-size:.85rem;
+    }
+    .notif-empty .material-symbols-outlined { font-size:2rem;color:#4ade80;display:block;margin-bottom:.5rem; }
   `]
 })
 export class AppComponent implements OnInit {
-  menuOpen = false;
-  isLoading = false;
+  menuOpen   = false;
+  isLoading  = false;
   isFadingOut = false;
 
-  constructor(private userService: UserService, private adminService: AdminService, private router: Router) { }
+  // Notifications
+  notifOpen   = false;
+  notifications: { type: string; icon: string; title: string; message: string }[] = [];
+  get unreadCount() { return this.notifications.length; }
+
+  constructor(
+    private userService: UserService,
+    private adminService: AdminService,
+    private rentalService: RentalService,
+    private router: Router
+  ) { }
+
 
   ngOnInit() {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
         this.isLoading = true;
         this.isFadingOut = false;
+        this.notifOpen = false;
       } else if (
         event instanceof NavigationEnd ||
         event instanceof NavigationCancel ||
@@ -410,18 +498,100 @@ export class AppComponent implements OnInit {
         setTimeout(() => {
           this.isLoading = false;
           this.isFadingOut = false;
-        }, 500); // Match fade-out CSS animation
+        }, 500);
+      }
+      if (event instanceof NavigationEnd) {
+        this.loadNotifications();
       }
     });
   }
-  get currentUser() { return this.userService.currentUser; }
+
+  loadNotifications() {
+    const user = this.userService.currentUser;
+    if (!user) { this.notifications = []; return; }
+
+    this.rentalService.getByUser(user.id).subscribe({
+      next: rentals => {
+        const notifs: any[] = [];
+        const today = new Date();
+
+        // 1. Check for overdue or due-soon rentals
+        rentals.forEach(r => {
+          if (r.status === 'OVERDUE') {
+            notifs.push({
+              type: 'warning',
+              icon: 'warning',
+              title: 'Overdue Rental!',
+              message: `"${r.movieTitle || 'A movie'}" is overdue. Please return it.`
+            });
+          } else if (r.status === 'ACTIVE') {
+            const due = new Date(r.dueDate);
+            const diff = Math.ceil((due.getTime() - today.getTime()) / 86400000);
+            if (diff <= 2 && diff >= 0) {
+              notifs.push({
+                type: 'info',
+                icon: 'schedule',
+                title: 'Due Soon',
+                message: `"${r.movieTitle || 'A movie'}" is due in ${diff} day(s).`
+              });
+            }
+          }
+        });
+
+        // 2. Add upgrade tip for FREE membership users
+        if (user.membershipType === 'FREE') {
+          notifs.push({
+            type: 'info',
+            icon: 'upgrade',
+            title: 'Upgrade Available',
+            message: 'Go Premium for unlimited rentals with no extra fees!'
+          });
+        }
+
+        this.notifications = notifs;
+      },
+      error: () => {
+        // Fallback with just membership info if backend fails
+        const notifs = [];
+        if (user.membershipType === 'FREE') {
+          notifs.push({
+            type: 'info',
+            icon: 'upgrade',
+            title: 'Upgrade Available',
+            message: 'Go Premium for unlimited rentals with no extra fees!'
+          });
+        }
+        this.notifications = notifs;
+      }
+    });
+  }
+
+
+
+  toggleNotif() { this.notifOpen = !this.notifOpen; }
+  clearNotifs() {
+    this.notifications = [];
+    const user = this.userService.currentUser;
+    if (user) localStorage.removeItem('cv_notif_' + user.id);
+    this.notifOpen = false;
+  }
+
+  get currentUser()  { return this.userService.currentUser; }
   get currentAdmin() { return this.adminService.currentAdmin; }
 
   toggleMenu() { this.menuOpen = !this.menuOpen; }
   closeMenu()  { this.menuOpen = false; }
 
   @HostListener('document:keydown.escape')
-  onEscape() { this.closeMenu(); }
+  onEscape() { this.closeMenu(); this.notifOpen = false; }
+
+  @HostListener('document:click', ['$event'])
+  onDocClick(e: Event) {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.notif-bell') && !target.closest('.notif-dropdown')) {
+      this.notifOpen = false;
+    }
+  }
 
   logout() {
     this.userService.logout();

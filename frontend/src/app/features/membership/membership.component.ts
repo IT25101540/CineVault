@@ -108,6 +108,27 @@ import { UserService } from '../../core/services/user.service';
           </div>
         </div>
 
+        <!-- 🎁 Referral Card -->
+        <div class="referral-card" *ngIf="currentUser">
+          <div class="referral-inner">
+            <span class="material-symbols-outlined referral-icon">card_giftcard</span>
+            <div class="referral-details">
+              <h3>Refer a Friend & Both Save!</h3>
+              <p>Share CineVault with your friends. When they use your referral code during membership upgrade, both of you get special perks!</p>
+            </div>
+            <div class="referral-action-box">
+              <span class="referral-label">Your Referral Code:</span>
+              <div class="referral-code-wrapper">
+                <span class="referral-code">{{ referralCode }}</span>
+                <button class="btn btn-primary btn-sm btn-copy" (click)="copyReferralCode()">
+                  <span class="material-symbols-outlined" style="font-size: 1rem;">{{ copied ? 'check_circle' : 'content_copy' }}</span>
+                  {{ copied ? 'Copied!' : 'Copy' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Cancel Subscription Banner (shown when user has paid plan) -->
         <div class="cancel-banner" *ngIf="currentUser?.membershipType === 'PREMIUM' || currentUser?.membershipType === 'ELITE'">
           <div class="cancel-banner-inner">
@@ -597,6 +618,28 @@ import { UserService } from '../../core/services/user.service';
     .modal-box p { color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6; }
     .modal-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
+    /* Referral Card Styling */
+    .referral-card {
+      background: linear-gradient(135deg, rgba(249,115,22,0.06), rgba(124,58,237,0.08));
+      border: 1px dashed rgba(249,115,22,0.3); border-radius: 20px;
+      padding: 1.5rem; margin-top: 2rem; margin-bottom: 1.5rem;
+    }
+    .referral-inner {
+      display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;
+    }
+    .referral-icon { font-size: 2.2rem; color: var(--accent); }
+    .referral-details { flex: 1; min-width: 250px; }
+    .referral-details h3 { color: #eae5d0; font-size: 1.15rem; margin-bottom: 0.25rem; font-weight: 700; }
+    .referral-details p { color: var(--text-muted); font-size: 0.88rem; margin: 0; line-height: 1.5; }
+    .referral-action-box { display: flex; flex-direction: column; gap: 0.35rem; }
+    .referral-label { font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; }
+    .referral-code-wrapper {
+      display: flex; align-items: center; background: var(--surface-2);
+      border: 1px solid var(--border); border-radius: 50px; padding: 0.25rem 0.25rem 0.25rem 1rem; gap: 1rem;
+    }
+    .referral-code { font-family: monospace; font-size: 0.95rem; font-weight: 700; color: var(--accent); letter-spacing: 0.5px; }
+    .btn-copy { border-radius: 50px; display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.4rem 1rem; }
+
     /* Mobile Optimizations */
     @media (max-width: 768px) {
       .membership-container { padding: 2.5rem 1rem; }
@@ -624,6 +667,22 @@ export class MembershipComponent {
   selectedPlan: 'FREE' | 'PREMIUM' | 'ELITE' = 'FREE';
   loading = false;
   showCancelModal = false;
+
+  // Referral states
+  copied = false;
+  get referralCode(): string {
+    const user = this.currentUser;
+    if (!user) return 'SIGN IN TO VIEW';
+    return 'CV-' + user.username.toUpperCase().replace(/\s+/g, '') + '-' + user.id.substring(user.id.length - 4).toUpperCase();
+  }
+
+  copyReferralCode() {
+    if (!this.currentUser) return;
+    navigator.clipboard.writeText(this.referralCode);
+    this.copied = true;
+    setTimeout(() => this.copied = false, 2000);
+  }
+
   formData = { name: '', phone: '', location: '', email: '', message: '' };
 
   // Card details state
@@ -705,6 +764,10 @@ export class MembershipComponent {
       this.discountPercentage = 20;
       this.promoSuccess = 'Promo code WELCOME20 applied! 20% discount.';
       this.appliedPromo = 'WELCOME20';
+    } else if (code.startsWith('CV-')) {
+      this.discountPercentage = 30;
+      this.promoSuccess = 'Referral code applied! 30% discount for both of you.';
+      this.appliedPromo = code;
     } else {
       this.promoError = 'Invalid promo code.';
     }

@@ -16,6 +16,7 @@ export interface Movie {
   releaseYear: number;
   synopsis: string;
   posterUrl: string;
+  trailerUrl?: string;
   averageRating: number;
   directorId: string;
   actorIds?: string[];
