@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface ReviewSummary {
   summary: string;
@@ -12,8 +13,8 @@ export interface ReviewSummary {
 @Injectable({ providedIn: 'root' })
 export class AiService {
 
-  // Calls our Spring Boot backend — no CORS issues
-  private readonly API_URL = 'http://localhost:7000/api/ai/summarize';
+  // Calls our Spring Boot backend
+  private readonly API_URL = `${environment.apiUrl}/ai/summarize`;
 
   constructor(private http: HttpClient) {}
 
