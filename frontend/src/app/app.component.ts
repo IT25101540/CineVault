@@ -452,12 +452,13 @@ import { RentalService } from './core/services/rental.service';
       transition:background .15s;
     }
     .notif-item:hover { background:rgba(255,255,255,.03); }
+    .notif-item > div { min-width:0;flex:1; }
     .notif-icon { font-size:1.1rem;margin-top:1px;flex-shrink:0; }
     .notif-warning .notif-icon { color:#f87171; }
     .notif-info    .notif-icon { color:#60a5fa; }
     .notif-success .notif-icon { color:#4ade80; }
-    .notif-title { font-size:.82rem;font-weight:600;color:var(--text);margin:0; }
-    .notif-msg   { font-size:.75rem;color:var(--text-muted);margin:.15rem 0 0; }
+    .notif-title { font-size:.82rem;font-weight:600;color:var(--text);margin:0;word-wrap:break-word;overflow-wrap:break-word; }
+    .notif-msg   { font-size:.75rem;color:var(--text-muted);margin:.15rem 0 0;word-wrap:break-word;overflow-wrap:break-word; }
     .notif-empty {
       padding:1.5rem;text-align:center;
       color:var(--text-muted);font-size:.85rem;
