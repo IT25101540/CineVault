@@ -44,7 +44,7 @@ public class EmailNotificationService {
             }
 
             // Log startup SMTP state
-            System.out.println("[EmailService] SMTP ready → host=" + impl.getHost()
+            System.out.println("[EmailService] SMTP ready -> host=" + impl.getHost()
                     + ", port=" + impl.getPort()
                     + ", username=" + impl.getUsername()
                     + ", passwordSet=" + (impl.getPassword() != null && !impl.getPassword().isBlank()));
