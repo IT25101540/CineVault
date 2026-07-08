@@ -39,7 +39,8 @@ import { Person } from '../../core/models/models';
       <div class="person-grid" *ngIf="!loading && people.length">
         <div class="card" *ngFor="let p of people" style="padding:1.25rem;text-align:center;">
           <div class="person-avatar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <img *ngIf="p.photoUrl" [src]="p.photoUrl" [alt]="p.fullName" class="person-photo" (error)="p.photoUrl = ''"/>
+            <svg *ngIf="!p.photoUrl" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
           <!-- Deactivated Overlay -->
           <div class="deactivated-overlay" *ngIf="p.active === false">
@@ -74,7 +75,8 @@ import { Person } from '../../core/models/models';
   `,
   styles: [`
     .person-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1.25rem; }
-    .person-avatar { width:100%;aspect-ratio:1;background:var(--surface-2);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:2.5rem; }
+    .person-avatar { width:100%;aspect-ratio:1;background:var(--surface-2);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:2.5rem;overflow:hidden; }
+    .person-photo { width:100%;height:100%;object-fit:cover;object-position:top center;border-radius:var(--radius-lg); }
     .deactivated-overlay {
       position: absolute; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.6); display: flex; align-items: center;
