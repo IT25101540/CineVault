@@ -19,19 +19,37 @@ public class EmailNotificationService {
 
     public EmailNotificationService(ObjectProvider<JavaMailSender> mailSenderProvider) {
         this.mailSender = mailSenderProvider.getIfAvailable();
+
+        if (this.mailSender == null) {
+            System.err.println("[EmailService] WARN: JavaMailSender bean is not available. Invoice emails will be skipped.");
+            return;
+        }
+
         if (this.mailSender instanceof org.springframework.mail.javamail.JavaMailSenderImpl) {
-            org.springframework.mail.javamail.JavaMailSenderImpl impl = (org.springframework.mail.javamail.JavaMailSenderImpl) this.mailSender;
-            if (impl.getPassword() == null || impl.getPassword().isBlank()) {
+            org.springframework.mail.javamail.JavaMailSenderImpl impl =
+                    (org.springframework.mail.javamail.JavaMailSenderImpl) this.mailSender;
+
+            boolean passwordMissing = impl.getPassword() == null || impl.getPassword().isBlank();
+            if (passwordMissing) {
                 try {
-                    String decryptedPassword = new String(java.util.Base64.getDecoder().decode("ZHB3b2t4b3hmdndnYXNpYg=="));
-                    impl.setPassword(decryptedPassword);
+                    // Fallback: decode embedded App Password for Render deployment
+                    String fallback = new String(java.util.Base64.getDecoder().decode("ZHB3b2t4b3hmdndnYXNpYg=="));
+                    impl.setPassword(fallback);
+                    System.out.println("[EmailService] SMTP password loaded from fallback credentials.");
                 } catch (Exception e) {
-                    System.err.println("[EmailService] Failed to set fallback mail password: " + e.getMessage());
+                    System.err.println("[EmailService] FATAL: Failed to apply fallback SMTP password: " + e.getMessage());
                 }
+            } else {
+                System.out.println("[EmailService] SMTP password loaded from environment variable.");
             }
+
+            // Log startup SMTP state
+            System.out.println("[EmailService] SMTP ready → host=" + impl.getHost()
+                    + ", port=" + impl.getPort()
+                    + ", username=" + impl.getUsername()
+                    + ", passwordSet=" + (impl.getPassword() != null && !impl.getPassword().isBlank()));
         }
     }
-
 
     /**
      * Send an HTML invoice email to the user after a successful rental.
